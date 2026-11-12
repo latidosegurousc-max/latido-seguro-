@@ -169,7 +169,7 @@
     async function solicitarApiRecordatorios(ruta, opciones = {}) {
       let respuesta;
       try {
-        respuesta = await fetch(ruta, {
+        respuesta = await fetch(window.API_BASE_URL + ruta, {
           ...opciones,
           credentials: 'include',
           headers: {
@@ -582,4 +582,3 @@
       actualizarCampoContacto();
       mostrarMensajeAgenda(resumenGuardado(datos.recordatorio, datos.creado));
     });
-
