@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latido Seguro | Seguimiento Cardiovascular</title>
+  <meta name="description" content="Latido Seguro: seguimiento cardiovascular, citas, recordatorios y acompañamiento para tu recuperación.">
+  <meta property="og:title" content="Latido Seguro | Seguimiento Cardiovascular">
+  <meta property="og:description" content="Latido Seguro: seguimiento cardiovascular, citas, recordatorios y acompañamiento para tu recuperación.">
+  <meta property="og:image" content="LOGO_SINL.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.ico">
+
+  <!-- Tipografías: Roboto para títulos y Open Sans para textos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+
+</head>
+<body>
+  <div id="avisoServidor" role="alert" hidden>Esta p&aacute;gina necesita ejecutarse desde el servidor (python mi_paciente_server.py).</div>
+  <div id="pagina-publica">
+  <header class="ls-header">
+  <div class="ls-header-inner">
+    <a class="ls-brand" href="#inicio">
+      <img src="LOGO_SINL.png" alt="Logo Latido Seguro" class="logo-imagen-header">
+      <span>Latido Seguro</span>
+    </a>
+
+    <nav class="ls-nav" aria-label="Navegación principal">
+      <a href="#inicio">Inicio</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#nosotros" id="btnNavNosotros">Nosotros</a>
+      <a href="#ayuda" id="btnNavAyuda">Ayuda</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+
+    <button type="button" class="ls-login" id="btnIniciar">Iniciar sesión</button>
+  </div>
+</header>
+
+<section class="ls-hero" id="inicio" aria-labelledby="ls-hero-title">
+  <div class="ls-hero-content">
+    <p class="ls-hero-kicker">Acompañamiento para tu salud cardiovascular</p>
+    <h1 id="ls-hero-title">Tu corazón, cuidado en cada paso</h1>
+    <p>
+      Accede a tus citas, recordatorios y herramientas de seguimiento en un solo lugar.
+      Estamos aquí para acompañarte.
+    </p>
+    <a class="ls-hero-cta" href="#servicios">Conoce nuestros servicios</a>
+  </div>
+</section>
+
+  <!-- =========================================
+       SECCIÓN DE INDUCCIÓN (Estilo Sura adaptado)
+       ========================================= -->
+  <section class="guia-paciente" id="servicios">
+    <div class="guia-contenedor">
+      <!-- Texto lateral izquierdo -->
+      <div class="guia-texto">
+        <div class="linea-decorativa"></div>
+        <h2>Conoce tu plataforma de seguimiento</h2>
+        <p>Te acompañamos en cada paso. Descubre cómo usar las herramientas de Latido Seguro para cuidar tu corazón y gestionar tu salud de forma fácil y segura.</p>
+      </div>
+
+      <!-- Tarjetas de opciones -->
+      <div class="guia-tarjetas">
+        <!-- Tarjeta 1: Citas -->
+        <article class="guia-card">
+          <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="Agendar citas médicas" loading="lazy">
+          <div class="guia-card-content">
+            <h3>Agenda tus citas</h3>
+            <p>Programa controles con tu equipo médico, revisa tus próximas citas y activa recordatorios para no olvidar tus exámenes ni medicamentos.</p>
+            <button type="button" class="btn-guia-accion" data-guia-destino="citas">Ir a Citas →</button>
+          </div>
+        </article>
+
+        <!-- Tarjeta 2: Urgencias -->
+        <article class="guia-card">
+          <img src="https://images.unsplash.com/photo-1584982751601-97dcc096659c?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="Atención de urgencias" loading="lazy">
+          <div class="guia-card-content">
+            <h3>¿Necesitas ayuda urgente?</h3>
+            <p>Si presentas síntomas de alerta, aquí encontrarás la guía rápida para solicitar atención prioritaria, saber dónde reclamar medicamentos o hablar con un profesional.</p>
+            <button type="button" class="btn-guia-accion" data-guia-destino="urgencias">Ir a Urgencias →</button>
+          </div>
+        </article>
+
+        <!-- Tarjeta 3: Cuidados -->
+        <article class="guia-card">
+          <img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="Educación en salud" loading="lazy">
+          <div class="guia-card-content">
+            <h3>Aprende a cuidarte</h3>
+            <p>Resuelve tus dudas sobre alimentación, heridas quirúrgicas, medicamentos y signos de alarma en nuestra sección de preguntas frecuentes.</p>
+            <button type="button" class="btn-guia-accion" data-guia-destino="cuidados">Ver Cuidados →</button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="acceso" id="acceso">
+    <div class="tarjeta-acceso">
+      <div class="modo-acceso" data-modo="login" role="group" aria-label="Tipo de acceso">
+        <button type="button" id="modoIniciar" aria-pressed="true">Iniciar sesión</button>
+        <button type="button" id="modoCrear" aria-pressed="false">Crear cuenta</button>
+      </div>
+      <h2 id="tituloAcceso">Ingresa a tu cuenta</h2>
+      <p class="ayuda" id="ayudaAcceso">Usa tu correo personal y contraseña.</p>
+
+      <form id="formAcceso" novalidate>
+        <div class="campo">
+          <label for="correoAcceso">Correo personal</label>
+          <input type="email" id="correoAcceso" name="email" placeholder="nombre@correo.com" autocomplete="email" maxlength="254" required>
+        </div>
+
+        <div class="campo campo-clave">
+          <label for="clave">Contraseña</label>
+          <div class="campo-clave-control">
+            <input type="password" id="clave" name="clave" placeholder="Tu contraseña" autocomplete="current-password" minlength="10" maxlength="128" required>
+            <button type="button" class="btn-mostrar" id="btnMostrar" aria-label="Mostrar contraseña" aria-pressed="false">
+              <svg class="icono-ojo-abierto" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="icono-ojo-cerrado" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/><path d="m3 3 18 18"/></svg>
+              <span id="textoBtnMostrar">Mostrar</span>
+            </button>
+          </div>
+          <small class="ayuda-clave" id="ayudaClave" hidden>Usa al menos 10 caracteres, con una mayúscula, una minúscula y un número.</small>
+        </div>
+
+        <button type="button" class="btn-continuar" id="btnContinuarRegistro" hidden>Continuar con mis datos</button>
+
+        <div class="datos-registro" id="datosRegistro" hidden>
+          <h3>Datos básicos del paciente</h3>
+          <p class="ayuda-registro">Estos datos quedarán asociados a tu cuenta.</p>
+
+          <div class="campos-dobles">
+            <div class="campo">
+              <label for="nombrePaciente">Nombre</label>
+              <input type="text" id="nombrePaciente" name="first_name" autocomplete="given-name" maxlength="80">
+            </div>
+            <div class="campo">
+              <label for="apellidoPaciente">Apellido</label>
+              <input type="text" id="apellidoPaciente" name="last_name" autocomplete="family-name" maxlength="80">
+            </div>
+          </div>
+
+          <div class="campos-dobles">
+            <div class="campo">
+              <label for="tipoDocumento">CC o TI</label>
+              <select id="tipoDocumento" name="document_type">
+                <option value="CC">C.C. — Cédula de ciudadanía</option>
+                <option value="TI">T.I. — Tarjeta de identidad</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="documentoPaciente">Número de documento</label>
+              <input type="text" id="documentoPaciente" name="document_number" placeholder="1122334455" inputmode="numeric" autocomplete="off" maxlength="20">
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="celularPaciente">Número celular</label>
+            <input type="tel" id="celularPaciente" name="phone" placeholder="Ej: 300 123 4567" autocomplete="tel" maxlength="24">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-ingresar" id="btnEnviarAcceso">Iniciar sesión</button>
+        <p class="mensaje" id="mensaje" role="status" aria-live="polite"></p>
+      </form>
+
+      <form id="formVerificacion" hidden novalidate>
+        <p class="instruccion-verificacion">Ingresa el código que enviamos a <strong id="correoVerificacion"></strong>.</p>
+        <div class="campo">
+          <label for="codigoVerificacion">Código de seis dígitos</label>
+          <input type="text" id="codigoVerificacion" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required>
+        </div>
+        <button type="submit" class="btn-ingresar" id="btnConfirmarVerificacion">Verificar correo</button>
+        <button type="button" class="btn-secundario-verificacion" id="btnReenviarCodigo">Reenviar código</button>
+        <button type="button" class="btn-secundario-verificacion" id="btnVolverAcceso">Volver al acceso</button>
+        <p class="mensaje" id="mensajeVerificacion" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+  </div>
+  <!-- =========================================
+       INTERFAZ: SOBRE NOSOTROS (EQUIPO)
+       ========================================= -->
+  <section class="panel" id="sobreNosotros" hidden>
+    <button type="button" class="btn-salir" id="btnVolverInicio">Volver al inicio</button>
+
+    <div class="nosotros-contenido">
+      <div class="panel-titulo">
+        <h2>Conoce a nuestro equipo</h2>
+        <p>Estudiantes de Ingeniería apasionados por crear soluciones tecnológicas para la salud.</p>
+      </div>
+
+      <div class="profesionales-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); max-width: 900px; margin: 0 auto; gap: 30px;">
+        <!-- Integrante 1 -->
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Foto de Jorge" loading="lazy">
+          <h3>Jorge Enrique Castillo</h3>
+          <p class="profesional-rol">Estudiante de Ingeniería</p>
+          <p style="font-size: 0.9rem; color: var(--gris-secundario); margin-bottom: 15px;">Desarrollo Frontend y lógica del servidor (Python).</p>
+        </article>
+
+        <!-- Integrante 2 -->
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Foto de integrante 2" loading="lazy">
+          <h3>[Nombre Compañero 2]</h3>
+          <p class="profesional-rol">Estudiante de Ingeniería</p>
+          <p style="font-size: 0.9rem; color: var(--gris-secundario); margin-bottom: 15px;">Diseño de interfaz y experiencia de usuario (UX/UI).</p>
+        </article>
+
+        <!-- Integrante 3 -->
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Foto de integrante 3" loading="lazy">
+          <h3>[Nombre Compañero 3]</h3>
+          <p class="profesional-rol">Estudiante de Ingeniería</p>
+          <p style="font-size: 0.9rem; color: var(--gris-secundario); margin-bottom: 15px;">Investigación médica y redacción de contenidos.</p>
+        </article>
+
+        <!-- Integrante 4 -->
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/men/45.jpg" alt="Foto de referencia del integrante 4" loading="lazy">
+          <h3>[Nombre Compañero 4]</h3>
+          <p class="profesional-rol">Estudiante de Ingeniería</p>
+          <p style="font-size: 0.9rem; color: var(--gris-secundario); margin-bottom: 15px;">Área de trabajo por definir.</p>
+        </article>
+
+        <!-- Integrante 5 -->
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/women/31.jpg" alt="Foto de referencia del integrante 5" loading="lazy">
+          <h3>[Nombre Compañero 5]</h3>
+          <p class="profesional-rol">Estudiante de Ingeniería</p>
+          <p style="font-size: 0.9rem; color: var(--gris-secundario); margin-bottom: 15px;">Área de trabajo por definir.</p>
+        </article>
+
+        <!-- Integrante 6 -->
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/men/75.jpg" alt="Foto de referencia del integrante 6" loading="lazy">
+          <h3>[Nombre Compañero 6]</h3>
+          <p class="profesional-rol">Estudiante de Ingeniería</p>
+          <p style="font-size: 0.9rem; color: var(--gris-secundario); margin-bottom: 15px;">Área de trabajo por definir.</p>
+        </article>
+
+        <!-- Integrante 7 -->
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/women/24.jpg" alt="Foto de referencia del integrante 7" loading="lazy">
+          <h3>[Nombre Compañero 7]</h3>
+          <p class="profesional-rol">Estudiante de Ingeniería</p>
+          <p style="font-size: 0.9rem; color: var(--gris-secundario); margin-bottom: 15px;">Área de trabajo por definir.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================
+       INTERFAZ: AYUDA / REPORTAR PROBLEMA
+       ========================================= -->
+  <section class="panel" id="seccionAyuda" hidden>
+    <button type="button" class="btn-salir" id="btnVolverAyuda">Volver al inicio</button>
+
+    <div class="ayuda-contenido" style="max-width: 800px; margin: 0 auto; padding: 20px;">
+      <div class="panel-titulo">
+        <h2>Centro de Ayuda</h2>
+        <p>¿Tuviste algún problema con la plataforma? Cuéntanos qué pasó y lo revisaremos.</p>
+      </div>
+
+      <div style="background: var(--blanco); padding: 30px; border-radius: 14px; box-shadow: 0 10px 30px rgba(40, 94, 97, 0.08);">
+        <form id="formReporte" novalidate>
+          <div class="campo">
+            <label for="correoPaciente">Tu correo electrónico (para contactarte)</label>
+            <input type="email" id="correoPaciente" placeholder="nombre@correo.com" required>
+          </div>
+
+          <div class="campo">
+            <label for="tipoProblema">¿Qué tipo de problema tuviste?</label>
+            <select id="tipoProblema" required>
+              <option value="">Selecciona una opción</option>
+              <option value="Error al iniciar sesión">Error al iniciar sesión</option>
+              <option value="No recibí el código de verificación">No recibí el código de verificación</option>
+              <option value="Error al guardar un recordatorio">Error al guardar un recordatorio</option>
+              <option value="La página no carga o se ve mal">La página no carga o se ve mal</option>
+              <option value="Otro problema">Otro problema</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="detalleProblema">Describe el problema (opcional)</label>
+            <textarea id="detalleProblema" style="width: 100%; min-height: 100px; padding: 12px; border: 1.5px solid var(--verde-salvia); border-radius: 12px; background: var(--verde-muy-claro); font-family: inherit; font-size: 1rem; resize: vertical;" maxlength="500" placeholder="Ej: Al hacer clic en guardar, la página se quedó cargando..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-ingresar" id="btnEnviarReporte">Enviar reporte</button>
+          <p class="mensaje" id="mensajeReporte" role="status" aria-live="polite" style="margin-top: 15px;"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================
+       INTERFAZ: CONTACTO
+       ========================================= -->
+  <section class="panel" id="seccionContacto" hidden>
+    <button type="button" class="btn-salir" id="btnVolverContacto">Volver al inicio</button>
+
+    <div class="contacto-contenido" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
+      <div class="panel-titulo">
+        <h2>Estamos aquí para ti</h2>
+        <p>Elige el medio que prefieras para comunicarte con nuestro equipo. Te responderemos lo antes posible.</p>
+      </div>
+
+      <div class="contacto-grid">
+        <a href="https://wa.me/576024857164?text=Hola%20LatidoSeguro,%20me%20quisiera%20contactar%20con%20ustedes" target="_blank" rel="noopener" class="contacto-card">
+          <div class="contacto-icono" style="background: #25D366; color: white;">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          </div>
+          <h3>WhatsApp</h3>
+          <p>Escríbenos para una respuesta rápida.</p>
+        </a>
+
+        <a href="tel:+576024857164" class="contacto-card">
+          <div class="contacto-icono" style="background: var(--color-primario); color: white;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <h3>Llámanos</h3>
+          <p>Línea de atención: (602) 485 7164</p>
+        </a>
+
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=latidoseguro.usc@gmail.com&su=Contacto%20desde%20la%20plataforma%20Latido%20Seguro&body=Hola%20LatidoSeguro,%20me%20quisiera%20contactar%20con%20ustedes" target="_blank" rel="noopener" class="contacto-card">
+          <div class="contacto-icono" style="background: #EA4335; color: white;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/><path d="M4 17V8m16 9V8"/></svg>
+          </div>
+          <h3>Correo</h3>
+          <p>Escríbenos a latidoseguro.usc@gmail.com</p>
+        </a>
+
+        <a href="https://share.google/koye3y8UjZxSnXCR4" target="_blank" rel="noopener" class="contacto-card">
+          <div class="contacto-icono" style="background: var(--color-menta); color: var(--color-teal);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+          </div>
+          <h3>Visítanos</h3>
+          <p>Consulta nuestra dirección y horarios en Google Maps.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel" hidden>
+    <!-- Encabezado para las pantallas internas -->
+    <header class="header-interno">
+      <div class="logo-interno">
+        <img src="LOGO_SINL.png" alt="Logo Latido Seguro">
+        <span>Latido Seguro</span>
+      </div>
+    </header>
+    <button type="button" class="btn-salir" id="btnSalir">Cerrar sesión</button>
+
+    <div class="panel-titulo">
+      <h2 id="saludo">Hola</h2>
+      <p>¿Qué quieres consultar hoy?</p>
+    </div>
+
+    <div class="cuadros">
+      <article class="cuadro clic" id="cardCuidados" role="button" tabindex="0">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg>
+        </div>
+        <h3>Conoce más sobre tus cuidados</h3>
+        <p>Recomendaciones para tu recuperación: alimentación, actividad física, medicamentos y señales de alerta.</p>
+      </article>
+
+      <article class="cuadro clic" id="cardCitas" role="button" tabindex="0" aria-label="Abrir citas y recordatorios">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>
+        </div>
+        <h3>Citas y recordatorios</h3>
+        <p>Consulta tus próximas citas de control y recibe recordatorios para no olvidar tus exámenes ni tus medicamentos.</p>
+      </article>
+
+      <article class="cuadro urgente clic" id="cardUrgencias" role="button" tabindex="0" aria-label="Abrir necesidades urgentes">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 2.8 19.5h18.4L12 3.5z"/><path d="M12 10v4.5M12 17.4v.1"/></svg>
+        </div>
+        <h3>Necesidades urgentes</h3>
+        <p>Si presentas dolor en el pecho, falta de aire u otro síntoma que te preocupe, aquí encontrarás cómo recibir ayuda.</p>
+      </article>
+
+      <article class="cuadro clic" id="cardUbicacion" role="button" tabindex="0">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+        </div>
+        <h3>Dónde estamos ubicados</h3>
+        <p>Dirección de la clínica, horarios de atención y cómo llegar.</p>
+      </article>
+    </div>
+    <!-- =========================================
+         SECCIÓN DE CONTENIDOS PARA TU BIENESTAR
+         ========================================= -->
+    <div class="bienestar-seccion">
+      <h2 class="bienestar-titulo">Contenidos para tu bienestar</h2>
+      <div class="bienestar-linea"></div>
+
+      <!-- Contenedor del Carrusel -->
+      <div class="bienestar-carrusel-wrapper">
+        <div class="bienestar-grid" id="bienestarCarrusel">
+          <!-- Tarjeta 1: Video -->
+          <article class="bienestar-card">
+            <div class="bienestar-img-container">
+              <img src="https://img.youtube.com/vi/e9W5s9HkuZw/maxresdefault.jpg" alt="Miniatura video salud cardiovascular" loading="lazy">
+              <div class="bienestar-icono-superpuesto" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+              </div>
+            </div>
+            <div class="bienestar-card-body">
+              <span class="bienestar-fecha">Hace 3 años</span>
+              <h3>5 hábitos para reducir las enfermedades cardiovasculares</h3>
+              <p>Descubre cómo pequeños cambios en tu rutina diaria pueden proteger tu corazón y mejorar tu calidad de vida.</p>
+              <button type="button" class="bienestar-btn-accion" data-video="e9W5s9HkuZw">VER <span aria-hidden="true">→</span></button>
+            </div>
+          </article>
+          <!-- Tarjeta 2: Alimentación y salud arterial -->
+          <article class="bienestar-card">
+            <div class="bienestar-img-container">
+              <img src="https://img.youtube.com/vi/wPyT6Ma4qes/maxresdefault.jpg" alt="Miniatura de video sobre alimentación y salud arterial" loading="lazy">
+              <div class="bienestar-icono-superpuesto" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+              </div>
+            </div>
+            <div class="bienestar-card-body">
+              <span class="bienestar-fecha">Hace 3 años</span>
+              <h3>8 alimentos que apoyan la salud de tus arterias</h3>
+              <p>Conoce opciones que pueden formar parte de una alimentación cardiosaludable. Ningún alimento limpia las arterias por sí solo ni garantiza prevenir un infarto.</p>
+              <button type="button" class="bienestar-btn-accion" data-video="wPyT6Ma4qes">VER <span aria-hidden="true">→</span></button>
+            </div>
+          </article>
+          <!-- Tarjeta 3: 10 alimentos para tu corazón -->
+          <article class="bienestar-card">
+            <div class="bienestar-img-container">
+              <!-- Cargamos la miniatura del video de YouTube -->
+              <img src="https://img.youtube.com/vi/Q-aHEJnZsCU/maxresdefault.jpg" alt="Miniatura de video sobre alimentos para el corazón" loading="lazy">
+              <div class="bienestar-icono-superpuesto" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+              </div>
+            </div>
+            <div class="bienestar-card-body">
+              <span class="bienestar-fecha">Hace 2 años</span>
+              <h3>10 alimentos para tu corazón</h3>
+              <p>Conoce alimentos como frutas, verduras, legumbres, cereales integrales y frutos secos, que pueden formar parte de un patrón de alimentación cardiosaludable.</p>
+              <button type="button" class="bienestar-btn-accion" data-video="Q-aHEJnZsCU">VER <span aria-hidden="true">→</span></button>
+            </div>
+          </article>
+          <!-- Tarjeta 4: Enfermedades cardiovasculares y especialistas -->
+          <article class="bienestar-card">
+            <div class="bienestar-img-container">
+              <img src="medico-especialista.png" alt="Ilustración de médicos especialistas" loading="lazy">
+              <div class="bienestar-icono-superpuesto" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+              </div>
+            </div>
+            
+            <div class="bienestar-card-body">
+              <span class="bienestar-fecha">Hace 5 años</span>
+              <h3>Enfermedades cardiovasculares y sus especialistas</h3>
+              <p>Conoce algunas afecciones cardiovasculares y los especialistas que participan en su atención. Tu profesional de salud puede orientarte sobre a quién consultar según tu caso.</p>
+              <button type="button" class="bienestar-btn-accion" data-video="Im6Gny54Ivs">VER <span aria-hidden="true">→</span></button>
+            </div>
+          </article>
+          <!-- Tarjeta 5: ¿Qué es un corazón fuera de ritmo? -->
+          <article class="bienestar-card">
+            <div class="bienestar-img-container">
+              <img src="https://img.youtube.com/vi/ATbBZ1mLV8M/maxresdefault.jpg" alt="Miniatura video corazón fuera de ritmo" loading="lazy">
+              <div class="bienestar-icono-superpuesto" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+              </div>
+            </div>
+            <div class="bienestar-card-body">
+              <span class="bienestar-fecha">Hace 6 años</span>
+              <h3>¿Qué es un corazón fuera de ritmo?</h3>
+              <p>Aprende sobre las arritmias cardíacas, por qué ocurren, cuáles son los síntomas de alerta y cómo se puede tratar este tipo de afecciones.</p>
+              <button type="button" class="bienestar-btn-accion" data-video="ATbBZ1mLV8M">VER <span aria-hidden="true">→</span></button>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="agenda" hidden>
+    <button type="button" class="btn-salir" id="btnVolverAgenda">Volver</button>
+
+    <div class="agenda-contenido">
+      <div class="agenda-titulo">
+        <h2>Citas y recordatorios</h2>
+        <p>Elige un día del calendario, confírmalo y luego el tipo de recordatorio que quieres crear.</p>
+      </div>
+
+      <div class="agenda-layout">
+        <section class="calendario" aria-label="Calendario de recordatorios">
+          <div class="calendario-cabecera">
+            <h3 id="mesCalendario" aria-live="polite"></h3>
+            <div class="calendario-nav">
+              <button type="button" id="mesAnterior" aria-label="Mes anterior">‹</button>
+              <button type="button" id="mesSiguiente" aria-label="Mes siguiente">›</button>
+            </div>
+          </div>
+          <div class="calendario-semana" aria-hidden="true">
+            <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+          </div>
+          <div class="calendario-dias" id="calendarioDias" role="group" aria-label="Días del mes"></div>
+          <p class="agenda-ayuda calendario-ayuda">Los números verdes indican cuántos recordatorios tienes ese día.</p>
+        </section>
+
+        <section class="agenda-panel" aria-label="Opciones para crear recordatorios">
+          <h3>¿Qué quieres recordar?</h3>
+          <p class="agenda-ayuda">Primero elige y confirma un día en el calendario; luego selecciona una opción para completar la hora y el canal de aviso.</p>
+          <p class="agenda-mensaje agenda-aviso-general" id="agendaAviso" role="status" aria-live="polite"></p>
+
+          <div class="agenda-opciones" id="agendaOpciones">
+            <button type="button" class="agenda-opcion" data-tipo="Cita de control" aria-pressed="false"><span aria-hidden="true">＋</span><span>Crear recordatorio para próximas citas de control</span></button>
+            <button type="button" class="agenda-opcion" data-tipo="Cita prioritaria" aria-pressed="false"><span aria-hidden="true">!</span><span>Crear recordatorio para citas prioritarias</span></button>
+            <button type="button" class="agenda-opcion" data-tipo="Dieta" aria-pressed="false"><span aria-hidden="true">♡</span><span>Crear mi dieta</span></button>
+            <button type="button" class="agenda-opcion" data-tipo="Medicamentos" aria-pressed="false"><span aria-hidden="true">＋</span><span>¿Cuándo me tomo mis medicamentos?</span></button>
+            <button type="button" class="agenda-opcion" data-tipo="Ejercicio" aria-pressed="false"><span aria-hidden="true">↗</span><span>¿En qué momento hago ejercicio?</span></button>
+          </div>
+
+          <form class="form-recordatorio" id="formRecordatorio" hidden>
+            <h4 id="tituloFormulario">Nuevo recordatorio</h4>
+            <p class="fecha-confirmada" id="fechaConfirmadaTexto"></p>
+            <div class="campo">
+              <label for="fechaRecordatorio">Día</label>
+              <input type="date" id="fechaRecordatorio" required>
+            </div>
+            <div class="campo">
+              <label for="horaRecordatorio">Hora</label>
+              <input type="time" id="horaRecordatorio" required>
+            </div>
+            <!-- El especialista solo se muestra para citas de control -->
+            <div class="campo" id="campoEspecialista" hidden>
+              <label for="especialistaRecordatorio">¿Con qué especialista quieres agendar?</label>
+              <select id="especialistaRecordatorio">
+                <option value="">Selecciona una especialidad</option>
+                <option value="Cardiólogo clínico">Cardiólogo clínico (Presión, arritmias, insuficiencia)</option>
+                <option value="Cardiólogo intervencionista / Hemodinamista">Cardiólogo intervencionista (Cateterismos, stents)</option>
+                <option value="Electrofisiólogo cardíaco">Electrofisiólogo (Ritmo cardíaco, taquicardias)</option>
+                <option value="Cardiólogo pediatra">Cardiólogo pediatra (Bebés, niños y adolescentes)</option>
+                <option value="Cirujano cardiovascular">Cirujano cardiovascular (Cirugías de corazón abierto)</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="detalleRecordatorio">Detalle (opcional)</label>
+              <input type="text" id="detalleRecordatorio" maxlength="120" placeholder="Ej.: control con cardiología">
+            </div>
+            <div class="campo">
+              <label for="canalRecordatorio">¿Cómo quieres recibir el aviso?</label>
+              <select id="canalRecordatorio" required>
+                <option value="">Selecciona un canal</option>
+                <option value="SMS">SMS</option>
+                <option value="Correo electrónico">Correo electrónico</option>
+                <option value="WhatsApp">WhatsApp</option>
+              </select>
+            </div>
+            <div class="campo" id="campoDestino" hidden>
+              <p class="destino-aviso" id="textoDestino" role="status"></p>
+              <label class="usar-otro" id="labelUsarOtro" for="usarOtroContacto"><input type="checkbox" id="usarOtroContacto"><span id="textoUsarOtro">Usar otro número solo para esta cita</span></label>
+            </div>
+            <p class="agenda-nota-canal" id="avisoCanal" role="status" hidden></p>
+            <div class="campo" id="campoContacto" hidden>
+              <label for="contactoRecordatorio" id="labelContacto">Dato de contacto</label>
+              <input id="contactoRecordatorio" autocomplete="off">
+            </div>
+            <button type="submit" class="btn-guardar-recordatorio">Guardar recordatorio</button>
+            <p class="agenda-mensaje" id="agendaMensaje" role="status" aria-live="polite"></p>
+            <p class="agenda-nota-canal" id="notaCanal">La cita queda guardada en tu cuenta. Al guardarla recibirás un aviso de confirmación y, el día de la cita, un recordatorio automático (hora de Colombia).</p>
+          </form>
+
+          <div class="lista-recordatorios">
+            <h4 id="tituloRecordatoriosDia">Recordatorios del día</h4>
+            <ul class="recordatorios-dia" id="recordatoriosDia"></ul>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="modal-fecha" id="modalConfirmarFecha" aria-labelledby="modalFechaTitulo" aria-describedby="modalFechaTexto">
+    <div class="modal-fecha-cuerpo">
+      <h3 id="modalFechaTitulo">Confirmar fecha</h3>
+      <p id="modalFechaTexto"></p>
+      <div class="modal-fecha-acciones">
+        <button type="button" class="btn-cancelar-fecha" id="btnCancelarFecha">Cancelar</button>
+        <button type="button" class="btn-guardar-recordatorio btn-confirmar-fecha" id="btnConfirmarFecha" autofocus>Confirmar fecha</button>
+      </div>
+    </div>
+  </dialog>
+
+  <section class="panel" id="urgencias" hidden>
+    <button type="button" class="btn-salir" id="btnVolverUrgencias">Volver</button>
+
+    <div class="urgencias-contenido">
+      <h2>Necesidades urgentes</h2>
+      <p class="urgencias-intro">Elige el tipo de ayuda que necesitas y te mostraremos el siguiente paso.</p>
+
+      <div class="urgencias-opciones">
+        <button type="button" class="urgencia-opcion" id="urgenciaCita">
+          <span class="urgencia-icono" aria-hidden="true">▦</span>
+          <strong>Necesito agendar una cita</strong>
+          <span>Elige la fecha, la hora y el canal para tu recordatorio.</span>
+        </button>
+        <button type="button" class="urgencia-opcion" id="urgenciaMedicamentos">
+          <span class="urgencia-icono" aria-hidden="true">＋</span>
+          <strong>¿Dónde reclamar mis medicamentos?</strong>
+          <span>Encuentra en el mapa los puntos Cruz Verde disponibles en Cali.</span>
+        </button>
+        <button type="button" class="urgencia-opcion" id="urgenciaHablar">
+          <span class="urgencia-icono" aria-hidden="true">☏</span>
+          <strong>Necesito a alguien con quien hablar</strong>
+          <span>Conoce a tres profesionales de referencia y comunícate con la clínica.</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="citaPrioritaria" hidden>
+    <button type="button" class="btn-salir" id="btnVolverCita">Volver</button>
+    <div class="cita-contenido">
+      <div class="cita-titulo">
+        <h2>Agendar una cita prioritaria</h2>
+        <p>Selecciona un día disponible y luego elige una hora para enviar tu solicitud.</p>
+      </div>
+      <p class="nota-disponibilidad">Horarios de demostración. La disponibilidad real debe conectarse con la agenda de la clínica para confirmar la cita.</p>
+
+      <div class="cita-layout">
+        <section class="calendario" aria-label="Calendario de citas prioritarias">
+          <div class="calendario-cabecera">
+            <h3 id="mesCita"></h3>
+            <div class="calendario-nav">
+              <button type="button" id="mesCitaAnterior" aria-label="Mes anterior">‹</button>
+              <button type="button" id="mesCitaSiguiente" aria-label="Mes siguiente">›</button>
+            </div>
+          </div>
+          <div class="calendario-semana" aria-hidden="true">
+            <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+          </div>
+          <div class="calendario-dias" id="calendarioCita" role="group" aria-label="Días disponibles"></div>
+          <p class="agenda-ayuda calendario-ayuda">Los puntos verdes indican días de ejemplo con horarios disponibles.</p>
+        </section>
+
+        <section class="agenda-panel" aria-label="Horarios y datos de la cita">
+          <h3 id="tituloDiaCita">Selecciona una fecha</h3>
+          <p class="agenda-ayuda" id="mensajeDisponibilidad">Elige un día hábil futuro en el calendario para ver los horarios.</p>
+          <div class="horarios-cita" id="horariosCita"></div>
+
+          <form class="form-cita-prioritaria" id="formCitaPrioritaria" hidden>
+            <div class="campo">
+              <label for="nombreCita">Nombre del paciente</label>
+              <input type="text" id="nombreCita" autocomplete="name" required>
+            </div>
+            <div class="campo">
+              <label for="telefonoCita">Teléfono de contacto</label>
+              <input type="tel" id="telefonoCita" autocomplete="tel" required>
+            </div>
+            <div class="campo">
+              <label for="motivoCita">Motivo de la solicitud (opcional)</label>
+              <textarea id="motivoCita" maxlength="240" placeholder="Cuéntanos brevemente el motivo"></textarea>
+            </div>
+            <button type="submit" class="btn-guardar-recordatorio">Solicitar cita prioritaria</button>
+          </form>
+          <p class="estado-cita" id="estadoCita" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="farmacias" hidden>
+    <button type="button" class="btn-salir" id="btnVolverFarmacias">Volver</button>
+    <div class="farmacias-contenido">
+      <h2>Dónde reclamar mis medicamentos</h2>
+      <p class="farmacias-intro">Explora en el mapa las droguerías Cruz Verde de Cali. Los resultados se consultan en Google Maps.</p>
+
+      <div class="busqueda-farmacia">
+        <input type="text" id="origenFarmacia" placeholder="Escribe tu dirección o barrio" aria-label="Tu ubicación o barrio" autocomplete="street-address">
+        <button type="button" class="btn-llegar" id="btnBuscarFarmacia">Encuentra la más cerca de ti</button>
+      </div>
+      <p class="nota-farmacia" id="notaFarmacia" role="status" aria-live="polite"></p>
+
+      <iframe class="mapa" id="mapaFarmacias" title="Mapa interactivo de droguerías Cruz Verde en Cali"
+        src="https://www.google.com/maps?q=Cruz+Verde+Cali&hl=es&output=embed"
+        loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <a class="enlace-mapa" id="enlaceFarmacias" href="https://www.google.com/maps/search/?api=1&amp;query=Cruz%20Verde%20Cali" target="_blank" rel="noopener">Abrir los resultados en Google Maps ↗</a>
+      <br>
+      <a class="enlace-directorio" href="https://www.cruzverde.com.co/droguerias-dispensacion/" target="_blank" rel="noopener">Consultar el directorio oficial de Cruz Verde ↗</a>
+      <p class="agenda-ayuda">Confirma con la droguería si allí dispensan tu medicamento y revisa sus horarios antes de desplazarte.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="contactoProfesionales" hidden>
+    <button type="button" class="btn-salir" id="btnVolverProfesionales">Volver</button>
+    <div class="profesionales-contenido">
+      <h2>Estamos aquí para escucharte</h2>
+      <p class="profesionales-intro">Elige el tipo de acompañamiento que buscas y llama a la línea de la clínica.</p>
+      <p class="profesionales-nota">Perfiles y fotos de referencia para el prototipo. El número mostrado es la línea general de la clínica.</p>
+
+      <div class="profesionales-grid">
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Foto de referencia de Laura Villamil" loading="lazy">
+          <h3>Laura Villamil</h3>
+          <p class="profesional-rol">Enfermería cardiovascular</p>
+          <a class="btn-llamar-profesional" href="tel:+576024857164" aria-label="Llamar a la clínica por Laura Villamil">☎ (602) 485 7164</a>
+        </article>
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Foto de referencia de Andrés Muñoz" loading="lazy">
+          <h3>Andrés Muñoz</h3>
+          <p class="profesional-rol">Acompañamiento emocional</p>
+          <a class="btn-llamar-profesional" href="tel:+576024857164" aria-label="Llamar a la clínica por Andrés Muñoz">☎ (602) 485 7164</a>
+        </article>
+        <article class="profesional-card">
+          <img class="foto-profesional" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Foto de referencia de Juliana Paredes" loading="lazy">
+          <h3>Juliana Paredes</h3>
+          <p class="profesional-rol">Orientación y trabajo social</p>
+          <a class="btn-llamar-profesional" href="tel:+576024857164" aria-label="Llamar a la clínica por Juliana Paredes">☎ (602) 485 7164</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="cuidados" hidden>
+    <button type="button" class="btn-salir" id="btnVolver">Volver</button>
+
+    <div class="cuidados-contenido">
+      <div class="faq-col">
+        <h2>Preguntas frecuentes</h2>
+        <!-- Banner de guía interactiva -->
+        <div class="guia-interactiva" id="guiaInteractiva">
+          <div class="guia-icono">💡</div>
+          <div class="guia-texto">
+            <h3>¿Es tu primera vez aquí?</h3>
+            <p>Te mostramos cómo encontrar respuestas a tus dudas en menos de 10 segundos.</p>
+          </div>
+          <button type="button" class="btn-guia" id="btnIniciarGuia">Ver cómo funciona</button>
+        </div>
+
+        <div class="buscador">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5 16 16"/></svg>
+          <input type="search" id="buscador" placeholder="¿Cuéntanos qué otras inquietudes tienes?" aria-label="Buscar en las preguntas frecuentes" autocomplete="off">
+        </div>
+
+        <div class="faq-lista" id="faqLista"></div>
+
+        <p class="sin-resultados" id="sinResultados">No encontramos preguntas con esa búsqueda. Puedes comentarle tu inquietud a tu equipo médico.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="ubicacion" hidden>
+    <button type="button" class="btn-salir" id="btnVolverUbicacion">Volver</button>
+
+    <div class="ubicacion-contenido">
+      <h2>Dónde estamos ubicados</h2>
+
+      <!-- Mapa interactivo de Google Maps (se puede mover, acercar y alejar) -->
+      <iframe
+        class="mapa"
+        id="mapa"
+        title="Mapa con la ubicación de Latido Seguro"
+        src="https://www.google.com/maps?q=Al+Alba+Cl%C3%ADnica+Cali&hl=es&output=embed"
+        loading="lazy"
+        allowfullscreen
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+      <a class="enlace-mapa" href="https://share.google/koye3y8UjZxSnXCR4" target="_blank" rel="noopener">Abrir en Google Maps ↗</a>
+
+      <div class="avisos">
+        <div class="aviso">
+          <div class="icono">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.5" cy="8" r="3"/><circle cx="16.5" cy="9" r="2.5"/><path d="M3 19.5c0-3.3 2.4-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><path d="M15 14.3c.5-.2 1-.3 1.5-.3 2.5 0 4.5 1.8 4.5 4.5"/></svg>
+          </div>
+          <p>Recuerda venir acompañado</p>
+        </div>
+
+        <div class="aviso">
+          <div class="icono">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+          </div>
+          <p>Recuerda que las visitas son hasta las 5 pm</p>
+        </div>
+
+        <div class="aviso">
+          <div class="icono">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+          </div>
+          <p>¿En dónde te encuentras ubicado?</p>
+          <input type="text" id="origen" placeholder="Escribe tu dirección o barrio" aria-label="Tu ubicación actual" autocomplete="street-address">
+          <button type="button" class="btn-llegar" id="btnLlegar">Cómo llegar</button>
+          <span class="aviso-nota" id="notaOrigen" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARDIbot: asistente virtual -->
+  <div class="cardibot" id="cardibot">
+    <section class="cardibot-ventana" id="cardibotVentana" role="dialog" aria-modal="true" aria-label="CARDIbot, asistente virtual" hidden>
+      <header class="cardibot-cabecera">
+        <span class="cardibot-avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg>
+        </span>
+        <div class="cardibot-titulo">
+          <strong>CARDIbot</strong>
+          <small>Asistente virtual de Latido Seguro</small>
+        </div>
+        <button type="button" class="cardibot-cerrar" id="cardibotCerrar" aria-label="Cerrar chat">✕</button>
+      </header>
+      <div class="cardibot-mensajes" id="cardibotMensajes" role="log" aria-live="polite" aria-label="Conversación con CARDIbot"></div>
+      <div class="cardibot-sugerencias" id="cardibotSugerencias" aria-label="Preguntas sugeridas"></div>
+      <form class="cardibot-form" id="cardibotForm" autocomplete="off">
+        <input type="text" id="cardibotEntrada" maxlength="200" placeholder="Escribe tu duda aquí…" aria-label="Escribe tu pregunta para CARDIbot">
+        <button type="submit" class="cardibot-enviar">Enviar</button>
+      </form>
+      <p class="cardibot-aviso">CARDIbot no reemplaza la atención médica. En una emergencia llama al 123.</p>
+    </section>
+    <button type="button" class="cardibot-fab" id="cardibotFab" aria-expanded="false" aria-controls="cardibotVentana">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-3.7A8 8 0 1 1 20 12z"/><path d="M12 14.6s-3-1.8-3-4a1.7 1.7 0 0 1 3-1.1 1.7 1.7 0 0 1 3 1.1c0 2.2-3 4-3 4z"/></svg>
+      <span>CARDIbot</span>
+    </button>
+  </div>
+
+  <!-- Corazón guía flotante -->
+  <div id="guiaCorazon" class="guia-corazon" style="display: none;">
+    <div class="guia-corazon-globo">
+      <p id="textoGuiaCorazon" role="status" aria-live="polite"></p>
+    </div>
+    <div class="guia-corazon-icono" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    </div>
+  </div>
+  <footer class="barra-contacto" aria-label="Canales de contacto">
+    <span>Contáctanos por</span>
+    <div class="canales-lista">
+      <button type="button" class="canal-oficial" data-canal="WhatsApp" aria-label="WhatsApp" title="WhatsApp">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.1 11.7a8.1 8.1 0 0 1-12 7.1L4 20l1.2-4a8.1 8.1 0 1 1 14.9-4.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8.3c.2-.4.5-.4.8-.4h.4c.2 0 .3.1.4.4l.7 1.6c.1.2.1.4-.1.6l-.5.6c-.2.2-.2.3-.1.5.5.9 1.1 1.5 2 2 .2.1.4.1.5-.1l.7-.8c.2-.2.4-.2.6-.1l1.5.7c.3.1.4.3.4.5 0 .4-.2 1.1-.6 1.4-.4.4-1 .6-1.6.5-1-.2-2.3-.8-3.6-2-1.2-1.1-2-2.4-2.2-3.4-.2-.7 0-1.4.3-1.9.2-.3.5-.5.8-.6Z" fill="currentColor"/></svg>
+      </button>
+      <button type="button" class="canal-oficial" data-canal="Instagram" aria-label="Instagram" title="Instagram">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.6" cy="6.6" r="1.1" fill="currentColor"/></svg>
+      </button>
+      <button type="button" class="canal-oficial" data-canal="Gmail" aria-label="Gmail" title="Gmail">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17V8m16 9V8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <button type="button" class="canal-oficial" data-canal="X" aria-label="X" title="X">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4.3l9.7 16h-4.3L5 4Zm0 16 6.4-7.1m1.2-1.4L19 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <p class="canal-mensaje" id="canalMensaje" role="status" aria-live="polite"></p>
+  </footer>
+
+  <!-- Modal para reproducir el video -->
+  <div id="modalVideo" class="video-overlay" role="dialog" aria-modal="true" aria-label="Video para tu bienestar" aria-hidden="true">
+    <div class="video-contenido">
+      <button type="button" id="btnCerrarVideo" class="btn-cerrar-video" aria-label="Cerrar video">✕</button>
+      <div class="video-responsive">
+        <!-- El src se llena dinámicamente con JavaScript -->
+        <iframe id="iframeVideo" src="" title="Reproductor de video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/agenda.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/faq.js"></script>
+  <script src="js/cardibot.js"></script>
+  <script src="js/biblioteca.js"></script>
+  <div id="tooltipBuscador" class="tooltip-guia">Escribe tu duda aqu&iacute;</div>
+  <div id="tooltipResultados" class="tooltip-guia">Aquí encontrarás problemas relacionados a los tuyos</div>
+  <div id="tooltipAbrir" class="tooltip-guia">Haz clic para leer la respuesta completa</div>
+</body>
+</html>

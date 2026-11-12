@@ -1,0 +1,52 @@
+MI PACIENTE — REGISTRO, INICIO DE SESIÓN, CITAS Y NOTIFICACIONES
+
+Para iniciar el sitio y usar las cuentas y recordatorios guardados en SQLite:
+
+1. Instala Python 3 si aún no está instalado (se recomienda 3.9 o superior).
+2. Abre una terminal dentro de esta carpeta.
+3. Ejecuta: python mi_paciente_server.py
+4. Abre en el navegador: http://127.0.0.1:8000   (usa 127.0.0.1, no "localhost")
+
+La base de datos se crea automáticamente en la carpeta de datos local del
+usuario de Windows (%LOCALAPPDATA%\MiPaciente\mi_paciente.sqlite3).
+Las contraseñas se guardan como hash PBKDF2; la base no guarda el texto
+original de la contraseña. Al arrancar, el servidor migra la base existente
+sin borrar datos (agrega la tabla "notifications" y la columna client_key).
+
+CALENDARIO Y CITAS
+- Al elegir un día aparece una ventana "¿Estás seguro de que deseas programar tu
+  cita para el ...?" con los botones "Confirmar fecha" y "Cancelar". Solo después
+  de confirmar se habilita el formulario. Si cambias la fecha en el formulario,
+  se pide confirmarla de nuevo.
+- No se aceptan fechas ni horas pasadas (hora de Colombia, America/Bogota).
+  La validación se hace en el navegador y de nuevo en el servidor.
+- Los avisos van por defecto al celular (SMS/WhatsApp) o correo registrados en la
+  cuenta, mostrados parcialmente ocultos. Puedes usar otro número/correo solo para
+  una cita, sin cambiar los datos de tu cuenta.
+
+NOTIFICACIONES (cada una se gestiona por separado en la tabla "notifications")
+- Confirmación: se envía justo después de guardar la cita.
+- Recordatorio del día de la cita: 8:00 a. m. (hora de Colombia). Si la cita se
+  crea después de las 8:00 a. m. del mismo día, se envía 1 hora antes (o lo más
+  tarde posible, siempre al menos 30 min antes). Si no hay tiempo útil o la cita es
+  antes de las 6:30 a. m., no se programa. Nunca se envía después de la cita.
+- Dieta, medicamentos y ejercicio mantienen su aviso único a la hora indicada.
+- Si el envío falla, la cita se conserva; se reintenta automáticamente (hasta 5
+  intentos con espera creciente) y luego aparece el botón "Reintentar envío".
+- Si el servidor estuvo apagado, al volver no se envían avisos de citas que ya
+  pasaron (quedan como VENCIDO).
+- "Enviada" significa que el proveedor (Twilio o el servidor SMTP) aceptó el
+  mensaje; la entrega final al teléfono depende del operador.
+
+CONFIGURACIÓN (archivo .env en esta carpeta; ver .env.example)
+Después de cambiar el .env, reinicia el servidor. Los avisos que quedaron como
+"SIN_CONFIGURAR" se reactivan solos al reiniciar si todavía son útiles.
+
+PRUEBAS
+  python pruebas_notificaciones.py
+Usa una base temporal y envíos simulados: no envía mensajes reales.
+
+SEGURIDAD
+- No guardes contraseñas ni claves en archivos dentro de esta carpeta: el servidor
+  publica los archivos estáticos. Ahora bloquea .py, .docx, .txt, .env y la base
+  de datos, pero lo correcto es no tener secretos fuera del archivo .env.
