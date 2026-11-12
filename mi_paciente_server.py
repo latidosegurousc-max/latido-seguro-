@@ -499,7 +499,13 @@ def _texto_recordatorio(recordatorio: dict[str, object]) -> str:
     return f"{texto} Detalle: {detalle}" if detalle else texto
 
 
-def _enviar_correo(destinatario: str, asunto: str, mensaje: str, es_html: bool = False) -> None:
+def _enviar_correo(
+    destinatario: str,
+    asunto: str,
+    mensaje: str,
+    es_html: bool = False,
+    adjuntos: list[dict[str, str]] | None = None,
+) -> None:
     api_key = os.environ.get("BREVO_API_KEY")
     if not api_key:
         raise ConfiguracionFaltante("Configura BREVO_API_KEY en Render.")
@@ -522,6 +528,8 @@ def _enviar_correo(destinatario: str, asunto: str, mensaje: str, es_html: bool =
         payload["htmlContent"] = mensaje
     else:
         payload["textContent"] = mensaje
+    if adjuntos:
+        payload["attachment"] = adjuntos
 
     solicitud = Request(
         url,
@@ -535,6 +543,48 @@ def _enviar_correo(destinatario: str, asunto: str, mensaje: str, es_html: bool =
                 raise RuntimeError(f"Brevo respondió con estado {respuesta.status}")
     except Exception as error:
         raise RuntimeError(f"Error al enviar con Brevo: {sanear_error(error)}") from error
+
+
+def _escapar_texto_ics(texto: str) -> str:
+    return (
+        texto.replace("\\", "\\\\")
+        .replace(";", "\\;")
+        .replace(",", "\\,")
+        .replace("\r\n", "\\n")
+        .replace("\n", "\\n")
+        .replace("\r", "\\n")
+    )
+
+
+def generar_ics(
+    tipo: str,
+    fecha: str,
+    hora: str,
+    detalle: str,
+    reminder_id: int,
+) -> str:
+    """Genera un evento iCalendar de una hora, con fechas en UTC y UID estable."""
+    inicio_local = cita_datetime(fecha, hora)
+    inicio_utc = inicio_local.astimezone(timezone.utc)
+    fin_utc = inicio_utc + timedelta(hours=1)
+    descripcion = detalle.strip() or "Recordatorio creado en Latido Seguro."
+    lineas = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Latido Seguro//Recordatorio//ES",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        f"UID:recordatorio-{reminder_id}@latidoseguro.com",
+        f"DTSTAMP:{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}",
+        f"DTSTART:{inicio_utc.strftime('%Y%m%dT%H%M%SZ')}",
+        f"DTEND:{fin_utc.strftime('%Y%m%dT%H%M%SZ')}",
+        f"SUMMARY:{_escapar_texto_ics('Recordatorio: ' + tipo)}",
+        f"DESCRIPTION:{_escapar_texto_ics(descripcion)}",
+        "END:VEVENT",
+        "END:VCALENDAR",
+    ]
+    return "\r\n".join(lineas) + "\r\n"
 
 
 def _construir_correo_html(titulo: str, contenido_html: str) -> str:
@@ -743,9 +793,19 @@ def _enviar_mensaje_twilio(contacto: str, mensaje: str, es_whatsapp: bool) -> st
     return sid
 
 
-def _enviar_correo_cita(clase: str, destinatario: str, tipo: str, fecha: str, hora: str) -> None:
+def _enviar_correo_cita(
+    clase: str,
+    destinatario: str,
+    tipo: str,
+    fecha: str,
+    hora: str,
+    detalle: str,
+    reminder_id: int,
+) -> None:
     """Correo de confirmación o de recordatorio del día. Lanza excepción si falla (a diferencia de los antiguos)."""
     es_cita = tipo in TIPOS_CITA
+    fecha_visible = fecha_legible(fecha)
+    hora_visible = hora_legible(hora)
     plataforma_url = html_escape(
         os.environ.get("MI_PACIENTE_PUBLIC_URL", "http://127.0.0.1:8000/").strip() or "http://127.0.0.1:8000/",
         quote=True,
@@ -754,28 +814,41 @@ def _enviar_correo_cita(clase: str, destinatario: str, tipo: str, fecha: str, ho
         asunto = "Latido Seguro: tu cita ha sido programada" if es_cita else "Latido Seguro: recordatorio creado"
         titulo = "Confirmación de tu cita" if es_cita else "Recordatorio creado"
         frase = (
-            f"Tu cita ha sido programada para el <strong>{html_escape(fecha)}</strong> a las <strong>{html_escape(hora)}</strong>"
+            f"Tu cita ha sido programada para el <strong>{html_escape(fecha_visible)}</strong> a las <strong>{html_escape(hora_visible)}</strong>"
             if es_cita else
-            f"Has creado un recordatorio para el <strong>{html_escape(fecha)}</strong> a las <strong>{html_escape(hora)}</strong>"
+            f"Has creado un recordatorio para el <strong>{html_escape(fecha_visible)}</strong> a las <strong>{html_escape(hora_visible)}</strong>"
         )
         cierre = "Recibirás un recordatorio el día de tu cita." if es_cita else "Te avisaremos a la hora indicada."
     else:
         asunto = "Latido Seguro: hoy tienes una cita"
         titulo = "Recordatorio de tu cita"
-        frase = f"Te recordamos que hoy tienes una cita programada a las <strong>{html_escape(hora)}</strong>"
+        frase = f"Te recordamos que hoy tienes una cita programada a las <strong>{html_escape(hora_visible)}</strong>"
         cierre = "Consulta los detalles en tu cuenta."
     contenido = f"""
     <p>Hola,</p>
     <p>{con_punto(frase) if not frase.endswith('</strong>') else frase}.</p>
     <div class="box">
         <p style="margin: 5px 0;"><strong>Tipo:</strong> {html_escape(tipo)}</p>
-        <p style="margin: 5px 0;"><strong>Fecha:</strong> {html_escape(fecha)}</p>
-        <p style="margin: 5px 0;"><strong>Hora:</strong> {html_escape(hora)}</p>
+        <p style="margin: 5px 0;"><strong>Fecha:</strong> {html_escape(fecha_visible)}</p>
+        <p style="margin: 5px 0;"><strong>Hora:</strong> {html_escape(hora_visible)}</p>
     </div>
     <p>{cierre} Recuerda consultar los detalles en la plataforma.</p>
     <a href="{plataforma_url}" class="btn">Ir a mi cuenta</a>
     """
-    _enviar_correo(destinatario, asunto, _construir_correo_html(titulo, contenido), es_html=True)
+    adjuntos = None
+    if clase == "CONFIRMACION":
+        ics = generar_ics(tipo, fecha, hora, detalle, reminder_id)
+        adjuntos = [{
+            "name": f"recordatorio-{reminder_id}.ics",
+            "content": base64.b64encode(ics.encode("utf-8")).decode("ascii"),
+        }]
+    _enviar_correo(
+        destinatario,
+        asunto,
+        _construir_correo_html(titulo, contenido),
+        es_html=True,
+        adjuntos=adjuntos,
+    )
 
 
 def texto_sms_cita(clase: str, tipo: str, fecha: str, hora: str) -> str:
@@ -800,10 +873,19 @@ def _despachar_notificacion(notificacion: dict[str, object]) -> str:
         _enviar_recordatorio({**notificacion, "channel": canal, "contact": contacto})
         return ""
     tipo = str(notificacion["reminder_type"])
-    fecha = fecha_legible(str(notificacion["reminder_date"]))
-    hora = hora_legible(str(notificacion["reminder_time"]))
+    fecha = str(notificacion["reminder_date"])
+    hora = str(notificacion["reminder_time"])
     if canal == "Correo electrónico":
-        _enviar_correo_cita(clase, contacto, tipo, fecha, hora)
+        detalle = str(notificacion.get("detail", ""))
+        _enviar_correo_cita(
+            clase,
+            contacto,
+            tipo,
+            fecha,
+            hora,
+            detalle,
+            int(notificacion["reminder_id"]),
+        )
         return ""
     if canal in {"SMS", "WhatsApp"}:
         return _enviar_mensaje_twilio(contacto, texto_sms_cita(clase, tipo, fecha, hora), es_whatsapp=(canal == "WhatsApp"))
