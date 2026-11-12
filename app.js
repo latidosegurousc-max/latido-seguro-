@@ -412,9 +412,9 @@
       }
 
       async function enviarAlServidor(reporte) {
-        const respuesta = await fetch('/api/reportar-problema', {
+        const respuesta = await fetch(window.API_BASE_URL + '/api/reportar-problema', {
           method: 'POST',
-          credentials: 'same-origin',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: reporte.id, correo: reporte.correo, tipo: reporte.tipo, detalle: reporte.detalle })
         });
