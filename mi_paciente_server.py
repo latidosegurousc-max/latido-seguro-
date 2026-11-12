@@ -1163,7 +1163,7 @@ def end_headers(self) -> None:
         self.wfile.write(body)
 
     def do_GET(self) -> None:
-    if self.command == 'OPTIONS':
+     if self.command == 'OPTIONS':
         self.send_response(204)
         self.end_headers()
         return
