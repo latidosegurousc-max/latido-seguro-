@@ -244,6 +244,20 @@ def connect_db() -> sqlite3.Connection:
 
 
 @contextmanager
+def db_session():
+    """Confirma o revierte la transacción y siempre cierra la conexión."""
+    connection = connect_db()
+    try:
+        yield connection
+        connection.commit()
+    except BaseException:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
+@contextmanager
 def transaccion():
     """Transacción de escritura atómica (BEGIN IMMEDIATE). No se usa durante envíos externos."""
     connection = connect_db()
@@ -275,7 +289,7 @@ def initialize_database() -> None:
         modo.close()
     except sqlite3.Error:
         pass
-    with connect_db() as connection:
+    with db_session() as connection:
         connection.executescript(
             """
             CREATE TABLE IF NOT EXISTS patients (
@@ -1073,21 +1087,18 @@ class MiPacienteHandler(SimpleHTTPRequestHandler):
             return None
         return super().send_head()
 
-    def list_directory(self, path):
+    def list_directory(self, _path):
         self.send_error(404, "Not found")
         return None
 
-def end_headers(self) -> None:
-    self.send_header("X-Content-Type-Options", "nosniff")
-    self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
-    
-    # Permitir conexiones desde Hostinger
-    self.send_header("Access-Control-Allow-Origin", "https://latidoseguro.com")
-    self.send_header("Access-Control-Allow-Credentials", "true")
-    self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-    self.send_header("Access-Control-Allow-Headers", "Content-Type")
-    
-    super().end_headers()
+    def end_headers(self) -> None:
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("Access-Control-Allow-Origin", "https://latidoseguro.com")
+        self.send_header("Access-Control-Allow-Credentials", "true")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        super().end_headers()
 
     def send_json(self, status: int, payload: dict[str, object]) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -1126,7 +1137,7 @@ def end_headers(self) -> None:
             return None
         token_hash = hashlib.sha256(token.encode("ascii", "ignore")).digest()
         now = datetime.now(timezone.utc).isoformat()
-        with connect_db() as connection:
+        with db_session() as connection:
             row = connection.execute(
                 """SELECT p.* FROM sessions s JOIN patients p ON p.id = s.patient_id
                    WHERE s.token_hash = ? AND s.expires_at > ?""",
@@ -1145,7 +1156,7 @@ def end_headers(self) -> None:
         token = secrets.token_urlsafe(32)
         token_hash = hashlib.sha256(token.encode("ascii")).digest()
         expires = datetime.now(timezone.utc) + timedelta(days=SESSION_DAYS)
-        with connect_db() as connection:
+        with db_session() as connection:
             connection.execute("DELETE FROM sessions WHERE expires_at <= ?", (datetime.now(timezone.utc).isoformat(),))
             connection.execute(
                 "INSERT INTO sessions (token_hash, patient_id, expires_at) VALUES (?, ?, ?)",
@@ -1162,14 +1173,12 @@ def end_headers(self) -> None:
         self.end_headers()
         self.wfile.write(body)
 
-    def do_GET(self) -> None:
-     if self.command == 'OPTIONS':
+    def do_OPTIONS(self) -> None:
         self.send_response(204)
         self.end_headers()
-        return
-    route = urlsplit(self.path).path
-    # ... (aquí sigue tu código normal)
-    route = urlsplit(self.path).path
+
+    def do_GET(self) -> None:
+        route = urlsplit(self.path).path
         if route == "/api/me":
             patient = self.current_patient()
             if not patient:
@@ -1182,7 +1191,7 @@ def end_headers(self) -> None:
             if not patient:
                 self.send_json(401, {"error": "Inicia sesión para consultar tus recordatorios."})
                 return
-            with connect_db() as connection:
+            with db_session() as connection:
                 rows = connection.execute(
                     """SELECT * FROM reminders WHERE patient_id = ?
                        ORDER BY reminder_date, reminder_time, id""",
@@ -1197,12 +1206,6 @@ def end_headers(self) -> None:
         super().do_GET()
 
     def do_POST(self) -> None:
-        if self.command == 'OPTIONS':
-            self.send_response(204)
-            self.end_headers()
-            return
-        route = urlsplit(self.path).path
-        # ... (el resto de tu código do_POST)
         route = urlsplit(self.path).path
         if route == "/api/register":
             self.register_patient()
@@ -1276,7 +1279,7 @@ def end_headers(self) -> None:
             return
 
         with _TECH_REPORT_SEND_LOCK:
-            with connect_db() as connection:
+            with db_session() as connection:
                 already_sent = connection.execute(
                     "SELECT 1 FROM technical_reports WHERE report_id = ?",
                     (report_id,),
@@ -1290,7 +1293,7 @@ def end_headers(self) -> None:
                 self.send_json(503, {"error": "No fue posible enviar el reporte al correo."})
                 return
 
-            with connect_db() as connection:
+            with db_session() as connection:
                 connection.execute(
                     "INSERT OR IGNORE INTO technical_reports (report_id, sent_at) VALUES (?, ?)",
                     (report_id, received_at.isoformat()),
@@ -1567,7 +1570,7 @@ def end_headers(self) -> None:
         if reminder_id < 1:
             self.send_json(400, {"error": "El identificador del recordatorio no es válido."})
             return
-        with connect_db() as connection:
+        with db_session() as connection:
             cursor = connection.execute(
                 "DELETE FROM reminders WHERE id = ? AND patient_id = ?",
                 (reminder_id, patient["id"]),
@@ -1579,7 +1582,7 @@ def end_headers(self) -> None:
 
     def send_verification_code(self, patient_id: int, email: str) -> int:
         """Guarda el código en patients antes de enviarlo; devuelve espera restante."""
-        with connect_db() as connection:
+        with db_session() as connection:
             patient = connection.execute(
                 """SELECT email_verified, verification_sent_at
                    FROM patients WHERE id = ?""",
@@ -1599,7 +1602,7 @@ def end_headers(self) -> None:
 
         code = str(secrets.randbelow(900_000) + 100_000)
         expires_at = now + timedelta(minutes=VERIFICATION_CODE_TTL_MINUTES)
-        with connect_db() as connection:
+        with db_session() as connection:
             cursor = connection.execute(
                 """UPDATE patients
                    SET codigo_verificacion = ?,
@@ -1620,7 +1623,7 @@ def end_headers(self) -> None:
             f"Vence en {VERIFICATION_CODE_TTL_MINUTES} minutos.",
         )
         sent_at = datetime.now(timezone.utc).isoformat()
-        with connect_db() as connection:
+        with db_session() as connection:
             connection.execute(
                 "UPDATE patients SET verification_sent_at = ? WHERE id = ?",
                 (sent_at, patient_id),
@@ -1634,7 +1637,7 @@ def end_headers(self) -> None:
             self.send_json(400, {"error": "Escribe un correo electrónico válido."})
             return
 
-        with connect_db() as connection:
+        with db_session() as connection:
             patient = connection.execute(
                 "SELECT id, email, email_verified FROM patients WHERE email = ?",
                 (email,),
@@ -1673,7 +1676,7 @@ def end_headers(self) -> None:
             return
 
         now = datetime.now(timezone.utc)
-        with connect_db() as connection:
+        with db_session() as connection:
             patient = connection.execute(
                 "SELECT * FROM patients WHERE email = ?", (email,)
             ).fetchone()
@@ -1778,7 +1781,7 @@ def end_headers(self) -> None:
         digest = password_digest(password, salt)
         created_at = datetime.now(timezone.utc).isoformat()
         try:
-            with connect_db() as connection:
+            with db_session() as connection:
                 cursor = connection.execute(
                     """INSERT INTO patients
                        (email, password_salt, password_hash, first_name, last_name,
@@ -1788,7 +1791,7 @@ def end_headers(self) -> None:
                 )
                 patient_id = cursor.lastrowid
         except sqlite3.IntegrityError:
-            with connect_db() as connection:
+            with db_session() as connection:
                 existing_email = connection.execute(
                     "SELECT id, email, email_verified FROM patients WHERE email = ?",
                     (email,),
@@ -1866,7 +1869,7 @@ def end_headers(self) -> None:
             self.send_json(401, {"error": "Correo o contraseña incorrectos."})
             return
 
-        with connect_db() as connection:
+        with db_session() as connection:
             patient = connection.execute("SELECT * FROM patients WHERE email = ?", (email,)).fetchone()
         if not patient:
             password_digest(password[:128], b"mi-paciente-dummy-salt")
@@ -1910,7 +1913,7 @@ def end_headers(self) -> None:
         token = self.session_token()
         if token:
             token_hash = hashlib.sha256(token.encode("ascii", "ignore")).digest()
-            with connect_db() as connection:
+            with db_session() as connection:
                 connection.execute("DELETE FROM sessions WHERE token_hash = ?", (token_hash,))
         self.send_response(200)
         self.send_header("Content-Type", "application/json; charset=utf-8")
