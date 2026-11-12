@@ -1,3 +1,5 @@
+window.API_BASE_URL = 'https://latido-seguro-api.onrender.com';
+
 // Shared utilities and file:// notice.
 if (window.location.protocol === 'file:') {
   const avisoServidor = document.getElementById('avisoServidor');
