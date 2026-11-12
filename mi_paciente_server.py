@@ -1169,7 +1169,7 @@ def end_headers(self) -> None:
         return
     route = urlsplit(self.path).path
     # ... (aquí sigue tu código normal)
-        route = urlsplit(self.path).path
+    route = urlsplit(self.path).path
         if route == "/api/me":
             patient = self.current_patient()
             if not patient:
