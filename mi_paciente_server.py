@@ -9,15 +9,12 @@ import json
 import os
 import re
 import secrets
-import smtplib
 import sqlite3
-import ssl
 import threading
 import time
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from datetime import time as hora_del_dia
-from email.message import EmailMessage
 from html import escape as html_escape
 from http.cookies import SimpleCookie
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -211,12 +208,12 @@ def enmascarar_correo(correo: str) -> str:
 def mensaje_canal_sin_configurar(canal: str) -> str | None:
     """None si el canal está configurado; si no, un mensaje comprensible."""
     if canal == "Correo electrónico":
-        servidor = os.environ.get("MI_PACIENTE_SMTP_HOST", "").strip()
-        usuario = os.environ.get("MI_PACIENTE_SMTP_USER", "").strip()
-        clave = os.environ.get("MI_PACIENTE_SMTP_PASSWORD", "")
-        remitente = os.environ.get("MI_PACIENTE_SMTP_FROM", usuario).strip()
-        if not servidor or not remitente or bool(usuario) != bool(clave):
-            return "El envío de correos no está configurado en el servidor."
+        api_key = os.environ.get("BREVO_API_KEY", "").strip()
+        remitente = os.environ.get(
+            "MI_PACIENTE_SMTP_FROM", "latidoseguro.usc@gmail.com"
+        ).strip()
+        if not api_key or not remitente:
+            return "Configura BREVO_API_KEY y el correo remitente de Brevo en el servidor."
         return None
     variable = "MI_PACIENTE_TWILIO_WHATSAPP_FROM" if canal == "WhatsApp" else "MI_PACIENTE_TWILIO_SMS_FROM"
     if not all(os.environ.get(nombre, "").strip() for nombre in (
@@ -229,7 +226,12 @@ def mensaje_canal_sin_configurar(canal: str) -> str | None:
 def sanear_error(error: object) -> str:
     """Texto de error sin credenciales, apto para guardar en la base y registrar."""
     texto = " ".join((str(error).strip() or type(error).__name__).split())
-    for nombre in ("MI_PACIENTE_TWILIO_AUTH_TOKEN", "MI_PACIENTE_TWILIO_ACCOUNT_SID", "MI_PACIENTE_SMTP_PASSWORD"):
+    for nombre in (
+        "MI_PACIENTE_TWILIO_AUTH_TOKEN",
+        "MI_PACIENTE_TWILIO_ACCOUNT_SID",
+        "MI_PACIENTE_SMTP_PASSWORD",
+        "BREVO_API_KEY",
+    ):
         secreto = os.environ.get(nombre, "")
         if len(secreto) >= 4:
             texto = texto.replace(secreto, "***")
@@ -498,40 +500,41 @@ def _texto_recordatorio(recordatorio: dict[str, object]) -> str:
 
 
 def _enviar_correo(destinatario: str, asunto: str, mensaje: str, es_html: bool = False) -> None:
-    servidor = os.environ.get("MI_PACIENTE_SMTP_HOST", "").strip()
-    usuario = os.environ.get("MI_PACIENTE_SMTP_USER", "").strip()
-    clave = os.environ.get("MI_PACIENTE_SMTP_PASSWORD", "")
-    remitente = os.environ.get("MI_PACIENTE_SMTP_FROM", usuario).strip()
-    if not servidor or not remitente:
-        raise ConfiguracionFaltante("Configura MI_PACIENTE_SMTP_HOST y MI_PACIENTE_SMTP_FROM para enviar correos.")
-    if bool(usuario) != bool(clave):
-        raise ConfiguracionFaltante("Configura juntos MI_PACIENTE_SMTP_USER y MI_PACIENTE_SMTP_PASSWORD.")
+    api_key = os.environ.get("BREVO_API_KEY")
+    if not api_key:
+        raise ConfiguracionFaltante("Configura BREVO_API_KEY en Render.")
 
-    correo = EmailMessage()
-    correo["Subject"] = asunto
-    correo["From"] = remitente
-    correo["To"] = destinatario
+    remitente = os.environ.get(
+        "MI_PACIENTE_SMTP_FROM", "latidoseguro.usc@gmail.com"
+    ).strip()
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "api-key": api_key,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    payload = {
+        "sender": {"email": remitente, "name": "Latido Seguro"},
+        "to": [{"email": destinatario}],
+        "subject": asunto,
+    }
     if es_html:
-        correo.set_content("Este correo requiere un lector de HTML.", subtype="plain")
-        correo.add_alternative(mensaje, subtype="html")
+        payload["htmlContent"] = mensaje
     else:
-        correo.set_content(mensaje)
+        payload["textContent"] = mensaje
 
-    puerto = int(os.environ.get("MI_PACIENTE_SMTP_PORT", "587"))
-    contexto = ssl.create_default_context()
-    if puerto == 465:
-        with smtplib.SMTP_SSL(servidor, puerto, timeout=20, context=contexto) as cliente:
-            if usuario:
-                cliente.login(usuario, clave)
-            cliente.send_message(correo)
-    else:
-        with smtplib.SMTP(servidor, puerto, timeout=20) as cliente:
-            cliente.ehlo()
-            cliente.starttls(context=contexto)
-            cliente.ehlo()
-            if usuario:
-                cliente.login(usuario, clave)
-            cliente.send_message(correo)
+    solicitud = Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    try:
+        with urlopen(solicitud, timeout=20) as respuesta:
+            if respuesta.status not in (200, 201):
+                raise RuntimeError(f"Brevo respondió con estado {respuesta.status}")
+    except Exception as error:
+        raise RuntimeError(f"Error al enviar con Brevo: {sanear_error(error)}") from error
 
 
 def _construir_correo_html(titulo: str, contenido_html: str) -> str:
@@ -583,7 +586,6 @@ def enviar_reporte_tecnico(tipo: str, detalle: str, correo_paciente: str) -> boo
     administrador = (
         os.environ.get("MI_PACIENTE_REPORT_TO", "").strip()
         or os.environ.get("MI_PACIENTE_SMTP_FROM", "").strip()
-        or os.environ.get("MI_PACIENTE_SMTP_USER", "").strip()
         or "latidoseguro.usc@gmail.com"
     )
     asunto = f"Nuevo Reporte Técnico: {tipo}"
@@ -773,10 +775,7 @@ def _enviar_correo_cita(clase: str, destinatario: str, tipo: str, fecha: str, ho
     <p>{cierre} Recuerda consultar los detalles en la plataforma.</p>
     <a href="{plataforma_url}" class="btn">Ir a mi cuenta</a>
     """
-    try:
-        _enviar_correo(destinatario, asunto, _construir_correo_html(titulo, contenido), es_html=True)
-    except smtplib.SMTPRecipientsRefused as error:
-        raise EnvioPermanente("El servidor de correo rechazó la dirección de destino.") from error
+    _enviar_correo(destinatario, asunto, _construir_correo_html(titulo, contenido), es_html=True)
 
 
 def texto_sms_cita(clase: str, tipo: str, fecha: str, hora: str) -> str:
@@ -1272,7 +1271,7 @@ class MiPacienteHandler(SimpleHTTPRequestHandler):
         recipient = (
             os.environ.get("MI_PACIENTE_REPORT_TO", "").strip()
             or os.environ.get("MI_PACIENTE_SMTP_FROM", "").strip()
-            or os.environ.get("MI_PACIENTE_SMTP_USER", "").strip()
+            or "latidoseguro.usc@gmail.com"
         )
         if not EMAIL_RE.fullmatch(recipient):
             self.send_json(503, {"error": "El correo de destino de los reportes no está configurado."})
