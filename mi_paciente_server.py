@@ -1077,10 +1077,17 @@ class MiPacienteHandler(SimpleHTTPRequestHandler):
         self.send_error(404, "Not found")
         return None
 
-    def end_headers(self) -> None:
-        self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
-        super().end_headers()
+def end_headers(self) -> None:
+    self.send_header("X-Content-Type-Options", "nosniff")
+    self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+    
+    # Permitir conexiones desde Hostinger
+    self.send_header("Access-Control-Allow-Origin", "https://latidoseguro.com")
+    self.send_header("Access-Control-Allow-Credentials", "true")
+    self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    self.send_header("Access-Control-Allow-Headers", "Content-Type")
+    
+    super().end_headers()
 
     def send_json(self, status: int, payload: dict[str, object]) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -1156,6 +1163,12 @@ class MiPacienteHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self) -> None:
+    if self.command == 'OPTIONS':
+        self.send_response(204)
+        self.end_headers()
+        return
+    route = urlsplit(self.path).path
+    # ... (aquí sigue tu código normal)
         route = urlsplit(self.path).path
         if route == "/api/me":
             patient = self.current_patient()
@@ -1184,6 +1197,12 @@ class MiPacienteHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self) -> None:
+        if self.command == 'OPTIONS':
+            self.send_response(204)
+            self.end_headers()
+            return
+        route = urlsplit(self.path).path
+        # ... (el resto de tu código do_POST)
         route = urlsplit(self.path).path
         if route == "/api/register":
             self.register_patient()
