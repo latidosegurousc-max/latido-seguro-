@@ -1227,10 +1227,17 @@ class MiPacienteHandler(SimpleHTTPRequestHandler):
         return row
 
     def set_session_cookie(self, token: str, max_age: int) -> None:
-        secure = "; Secure" if os.environ.get("MI_PACIENTE_HTTPS") == "1" else ""
+        # Detrás de Render la conexión es HTTPS; el proxy lo indica en X-Forwarded-Proto.
+        es_https = (
+            os.environ.get("MI_PACIENTE_HTTPS") == "1"
+            or self.headers.get("X-Forwarded-Proto", "").lower() == "https"
+        )
+        # Para que el navegador mande la cookie desde latidoseguro.com hacia la API,
+        # debe ser SameSite=None y Secure. En http local se mantiene Lax.
+        atributos = "; Secure; SameSite=None" if es_https else "; SameSite=Lax"
         self.send_header(
             "Set-Cookie",
-            f"{SESSION_COOKIE}={token}; HttpOnly; SameSite=Lax; Path=/; Max-Age={max_age}{secure}",
+            f"{SESSION_COOKIE}={token}; HttpOnly; Path=/; Max-Age={max_age}{atributos}",
         )
 
     def create_session(self, patient_id: int) -> None:
@@ -1851,7 +1858,7 @@ class MiPacienteHandler(SimpleHTTPRequestHandler):
         if not first_name or len(first_name) > 80 or not last_name or len(last_name) > 80:
             self.send_json(400, {"error": "Escribe el nombre y apellido (máximo 80 caracteres cada uno)."})
             return
-        if document_type not in {"CC", "TI"} or not re.fullmatch(r"\d{5,20}", document_number):
+        if document_type not in {"CC", "TI", "PASAPORTE", "OTRO"} or not re.fullmatch(r"\d{5,20}", document_number):
             self.send_json(400, {"error": "Verifica el tipo y número del documento."})
             return
         if not PHONE_RE.fullmatch(phone) or not 7 <= len(re.sub(r"\D", "", phone)) <= 20:
