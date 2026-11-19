@@ -1,7 +1,7 @@
     const btnIniciar = document.getElementById('btnIniciar');
-    const modoIniciar = document.getElementById('modoIniciar');
-    const modoCrear = document.getElementById('modoCrear');
-    const selectorModoAcceso = document.querySelector('.modo-acceso');
+    const tabIniciar = document.getElementById('tabIniciar');
+    const tabCrear = document.getElementById('tabCrear');
+    const selectorModoAcceso = document.querySelector('.modo-acceso-header');
     const acceso = document.getElementById('acceso');
     const form = document.getElementById('formAcceso');
     const formVerificacion = document.getElementById('formVerificacion');
@@ -18,6 +18,8 @@
     const mensaje = document.getElementById('mensaje');
     const tituloAcceso = document.getElementById('tituloAcceso');
     const ayudaAcceso = document.getElementById('ayudaAcceso');
+    const tituloVerificacion = document.getElementById('tituloVerificacion');
+    const ayudaVerificacion = document.getElementById('ayudaVerificacion');
     const ayudaClave = document.getElementById('ayudaClave');
     const btnContinuarRegistro = document.getElementById('btnContinuarRegistro');
     const btnEnviarAcceso = document.getElementById('btnEnviarAcceso');
@@ -44,21 +46,27 @@
       formVerificacion.hidden = true;
       selectorModoAcceso.hidden = false;
       const creandoCuenta = modo === 'registro';
-      modoIniciar.parentElement.dataset.modo = creandoCuenta ? 'registro' : 'login';
+      tabIniciar.parentElement.dataset.modo = creandoCuenta ? 'registro' : 'login';
       tituloAcceso.textContent = creandoCuenta ? 'Crea tu cuenta' : 'Ingresa a tu cuenta';
       ayudaAcceso.textContent = creandoCuenta
-        ? 'Primero registra tu correo y contraseña; después completa tus datos.'
+        ? 'Registra tu correo y contraseña; después completa tus datos.'
         : 'Usa el correo personal y la contraseña de tu cuenta.';
       correoAcceso.autocomplete = creandoCuenta ? 'email' : 'username';
       clave.autocomplete = creandoCuenta ? 'new-password' : 'current-password';
       ayudaClave.hidden = !creandoCuenta;
       datosRegistro.hidden = true;
-      camposRegistro.forEach((campo) => { campo.required = creandoCuenta; });
+      camposRegistro.forEach((campo) => { campo.required = false; });
       btnContinuarRegistro.hidden = !creandoCuenta;
       btnEnviarAcceso.textContent = creandoCuenta ? 'Crear cuenta' : 'Iniciar sesión';
-      modoIniciar.setAttribute('aria-pressed', String(!creandoCuenta));
-      modoCrear.setAttribute('aria-pressed', String(creandoCuenta));
+      tabIniciar.setAttribute('aria-pressed', String(!creandoCuenta));
+      tabCrear.setAttribute('aria-pressed', String(creandoCuenta));
+      tabIniciar.classList.toggle('tab-activo', !creandoCuenta);
+      tabIniciar.classList.toggle('tab-inactivo', creandoCuenta);
+      tabCrear.classList.toggle('tab-activo', creandoCuenta);
+      tabCrear.classList.toggle('tab-inactivo', !creandoCuenta);
       btnIniciar.setAttribute('aria-expanded', 'true');
+      form.reset();
+      ocultarClave();
       mensaje.textContent = '';
       acceso.classList.add('abierto');
       setTimeout(() => {
@@ -72,8 +80,8 @@
       correoVerificacion.textContent = email;
       codigoVerificacion.value = '';
       mensajeVerificacion.textContent = textoMensaje;
-      tituloAcceso.textContent = 'Verifica tu correo';
-      ayudaAcceso.textContent = 'Tu cuenta quedará activa cuando confirmes el código.';
+      tituloVerificacion.textContent = 'Verifica tu correo';
+      ayudaVerificacion.textContent = 'Tu cuenta quedará activa cuando confirmes el código.';
       form.hidden = true;
       formVerificacion.hidden = false;
       selectorModoAcceso.hidden = true;
@@ -82,8 +90,8 @@
     }
 
     btnIniciar.addEventListener('click', () => abrirAcceso('login'));
-    modoIniciar.addEventListener('click', () => abrirAcceso('login'));
-    modoCrear.addEventListener('click', () => abrirAcceso('registro'));
+    tabIniciar.addEventListener('click', () => abrirAcceso('login'));
+    tabCrear.addEventListener('click', () => abrirAcceso('registro'));
 
     const btnIrCrearCuenta = document.getElementById('btnIrCrearCuenta');
     const btnIrIniciarSesion = document.getElementById('btnIrIniciarSesion');
@@ -151,6 +159,9 @@
         return;
       }
       datosRegistro.hidden = false;
+      camposRegistro.forEach((campo) => { campo.required = true; });
+      btnContinuarRegistro.hidden = true;
+      btnEnviarAcceso.textContent = 'Finalizar registro';
       datosRegistro.scrollIntoView({ behavior: 'smooth', block: 'start' });
       document.getElementById('nombrePaciente').focus({ preventScroll: true });
     });
@@ -271,7 +282,9 @@
         }
       } finally {
         btnEnviarAcceso.disabled = false;
-        btnEnviarAcceso.textContent = modoAutenticacion === 'registro' ? 'Crear cuenta' : 'Iniciar sesión';
+        btnEnviarAcceso.textContent = modoAutenticacion === 'registro'
+          ? (datosRegistro.hidden ? 'Crear cuenta' : 'Finalizar registro')
+          : 'Iniciar sesión';
       }
     });
 
