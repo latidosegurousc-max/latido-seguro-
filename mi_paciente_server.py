@@ -587,6 +587,20 @@ def generar_ics(
     return "\r\n".join(lineas) + "\r\n"
 
 
+def url_google_calendar(tipo: str, fecha: str, hora: str, detalle: str) -> str:
+    inicio = cita_datetime(fecha, hora)
+    fin = inicio + timedelta(hours=1)
+    formato = "%Y%m%dT%H%M%S"
+    parametros = {
+        "action": "TEMPLATE",
+        "text": f"Recordatorio: {tipo}",
+        "dates": f"{inicio.strftime(formato)}/{fin.strftime(formato)}",
+        "ctz": "America/Bogota",
+        "details": detalle.strip() or "Recordatorio creado en Latido Seguro.",
+    }
+    return "https://calendar.google.com/calendar/render?" + urlencode(parametros)
+
+
 def _construir_correo_html(titulo: str, contenido_html: str) -> str:
     contacto_html = """
     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #2D68C4; text-align: center; font-size: 13px; color: #53565A;">
@@ -835,6 +849,9 @@ def _enviar_correo_cita(
     <p>{cierre} Recuerda consultar los detalles en la plataforma.</p>
     <a href="{plataforma_url}" class="btn">Ir a mi cuenta</a>
     """
+    if clase == "CONFIRMACION":
+        enlace_calendar = html_escape(url_google_calendar(tipo, fecha, hora, detalle), quote=True)
+        contenido += f'<p><a href="{enlace_calendar}" class="btn">Agregar a Google Calendar</a></p>'
     adjuntos = None
     if clase == "CONFIRMACION":
         ics = generar_ics(tipo, fecha, hora, detalle, reminder_id)
