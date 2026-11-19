@@ -70,9 +70,9 @@
       mensaje.textContent = '';
       acceso.classList.add('abierto');
       setTimeout(() => {
-        acceso.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('tarjetaAcceso').scrollIntoView({ behavior: 'smooth', block: 'center' });
         correoAcceso.focus({ preventScroll: true });
-      }, 200);
+      }, 500);
     }
 
     function mostrarVerificacion(email, textoMensaje = '') {
@@ -89,7 +89,10 @@
       codigoVerificacion.focus({ preventScroll: true });
     }
 
-    btnIniciar.addEventListener('click', () => abrirAcceso('login'));
+    btnIniciar.addEventListener('click', (event) => {
+      event.preventDefault();
+      abrirAcceso('login');
+    });
     tabIniciar.addEventListener('click', () => abrirAcceso('login'));
     tabCrear.addEventListener('click', () => abrirAcceso('registro'));
 
