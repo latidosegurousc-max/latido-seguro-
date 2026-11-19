@@ -1,211 +1,22 @@
-    // ---- Pantalla de necesidades urgentes ----
-    const cardUrgencias = document.getElementById('cardUrgencias');
-    const urgencias = document.getElementById('urgencias');
-    const btnVolverUrgencias = document.getElementById('btnVolverUrgencias');
-    const citaPrioritaria = document.getElementById('citaPrioritaria');
+    // Puntos de farmacia en un mapa de búsqueda de Google Maps.
     const farmacias = document.getElementById('farmacias');
     const contactoProfesionales = document.getElementById('contactoProfesionales');
-
-    function abrirUrgencias() {
-      document.body.classList.add('vista-interna');
-      panel.hidden = true;
-      urgencias.hidden = false;
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    }
-
-    cardUrgencias.addEventListener('click', abrirUrgencias);
-    cardUrgencias.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        abrirUrgencias();
-      }
-    });
-
-    btnVolverUrgencias.addEventListener('click', () => {
-      document.body.classList.remove('vista-interna');
-      urgencias.hidden = true;
-      panel.hidden = false;
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    });
-
-    // La cita prioritaria tiene su propio calendario, separado del de recordatorios.
-    const calendarioCita = document.getElementById('calendarioCita');
-    const mesCita = document.getElementById('mesCita');
-    const tituloDiaCita = document.getElementById('tituloDiaCita');
-    const mensajeDisponibilidad = document.getElementById('mensajeDisponibilidad');
-    const horariosCita = document.getElementById('horariosCita');
-    const formCitaPrioritaria = document.getElementById('formCitaPrioritaria');
-    const estadoCita = document.getElementById('estadoCita');
-    const HORARIOS_CITA_DEMO = [
-      { valor: '09:00', texto: '9:00 a. m.' },
-      { valor: '11:00', texto: '11:00 a. m.' },
-      { valor: '14:30', texto: '2:30 p. m.' }
-    ];
-    const hoyCita = new Date();
-    let mesCitaVisible = new Date(hoyCita.getFullYear(), hoyCita.getMonth(), 1);
-    let fechaCitaSeleccionada = '';
-    let horaCitaSeleccionada = '';
-
-    function diaCitaDisponible(textoFecha) {
-      const fecha = fechaDesdeTexto(textoFecha);
-      const diaSemana = fecha.getDay();
-      return textoFecha > fechaLocal(new Date()) && diaSemana !== 0 && diaSemana !== 6;
-    }
-
-    function dibujarCalendarioCita() {
-      const nombreMes = new Intl.DateTimeFormat('es-CO', { month: 'long', year: 'numeric' }).format(mesCitaVisible);
-      mesCita.textContent = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
-      calendarioCita.replaceChildren();
-
-      const primerDia = new Date(mesCitaVisible.getFullYear(), mesCitaVisible.getMonth(), 1);
-      const espacioInicial = (primerDia.getDay() + 6) % 7;
-      const inicio = new Date(mesCitaVisible.getFullYear(), mesCitaVisible.getMonth(), 1 - espacioInicial);
-
-      for (let indice = 0; indice < 42; indice++) {
-        const fecha = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + indice);
-        const fechaTexto = fechaLocal(fecha);
-        const enMesActual = fecha.getMonth() === mesCitaVisible.getMonth();
-        const disponible = enMesActual && diaCitaDisponible(fechaTexto);
-        const boton = document.createElement('button');
-        boton.type = 'button';
-        boton.className = 'dia-prioritario';
-        boton.disabled = !disponible;
-        if (disponible) boton.classList.add('disponible');
-        if (fechaTexto === fechaCitaSeleccionada) boton.classList.add('seleccionado');
-        boton.setAttribute('aria-pressed', fechaTexto === fechaCitaSeleccionada ? 'true' : 'false');
-        boton.setAttribute('aria-label', `${nombreFecha(fechaTexto)}${disponible ? ', disponibilidad de ejemplo' : ', no disponible'}`);
-        const numero = document.createElement('span');
-        numero.textContent = fecha.getDate();
-        boton.appendChild(numero);
-        if (disponible) {
-          const marca = document.createElement('span');
-          marca.className = 'marca-disponible';
-          marca.setAttribute('aria-hidden', 'true');
-          boton.appendChild(marca);
-        }
-        boton.addEventListener('click', () => {
-          fechaCitaSeleccionada = fechaTexto;
-          horaCitaSeleccionada = '';
-          formCitaPrioritaria.hidden = true;
-          estadoCita.textContent = '';
-          dibujarCalendarioCita();
-          dibujarHorariosCita();
-        });
-        calendarioCita.appendChild(boton);
-      }
-    }
-
-    function dibujarHorariosCita() {
-      horariosCita.replaceChildren();
-      if (!fechaCitaSeleccionada) {
-        tituloDiaCita.textContent = 'Selecciona una fecha';
-        mensajeDisponibilidad.textContent = 'Elige un día hábil futuro en el calendario para ver los horarios.';
-        return;
-      }
-
-      tituloDiaCita.textContent = nombreFecha(fechaCitaSeleccionada);
-      mensajeDisponibilidad.textContent = 'Estos horarios son ilustrativos; la clínica debe confirmar disponibilidad.';
-      HORARIOS_CITA_DEMO.forEach((horario) => {
-        const boton = document.createElement('button');
-        boton.type = 'button';
-        boton.className = 'hora-disponible';
-        boton.textContent = horario.texto;
-        boton.setAttribute('aria-pressed', horario.valor === horaCitaSeleccionada ? 'true' : 'false');
-        if (horario.valor === horaCitaSeleccionada) boton.classList.add('seleccionada');
-        boton.addEventListener('click', () => {
-          horaCitaSeleccionada = horario.valor;
-          formCitaPrioritaria.hidden = false;
-          estadoCita.textContent = '';
-          dibujarHorariosCita();
-        });
-        horariosCita.appendChild(boton);
-      });
-    }
-
-    function abrirCitaPrioritaria() {
-      urgencias.hidden = true;
-      citaPrioritaria.hidden = false;
-      mesCitaVisible = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-      fechaCitaSeleccionada = '';
-      horaCitaSeleccionada = '';
-      formCitaPrioritaria.reset();
-      formCitaPrioritaria.hidden = true;
-      estadoCita.textContent = '';
-      dibujarCalendarioCita();
-      dibujarHorariosCita();
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    }
-
-    document.getElementById('urgenciaCita').addEventListener('click', abrirCitaPrioritaria);
-    document.getElementById('mesCitaAnterior').addEventListener('click', () => {
-      mesCitaVisible = new Date(mesCitaVisible.getFullYear(), mesCitaVisible.getMonth() - 1, 1);
-      fechaCitaSeleccionada = '';
-      horaCitaSeleccionada = '';
-      formCitaPrioritaria.hidden = true;
-      dibujarCalendarioCita();
-      dibujarHorariosCita();
-    });
-    document.getElementById('mesCitaSiguiente').addEventListener('click', () => {
-      mesCitaVisible = new Date(mesCitaVisible.getFullYear(), mesCitaVisible.getMonth() + 1, 1);
-      fechaCitaSeleccionada = '';
-      horaCitaSeleccionada = '';
-      formCitaPrioritaria.hidden = true;
-      dibujarCalendarioCita();
-      dibujarHorariosCita();
-    });
-
-    formCitaPrioritaria.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (!formCitaPrioritaria.reportValidity()) return;
-      if (!fechaCitaSeleccionada || !horaCitaSeleccionada) {
-        estadoCita.textContent = 'Selecciona un día y una hora para continuar.';
-        return;
-      }
-
-      const solicitud = {
-        id: `${Date.now()}-${Math.random()}`,
-        tipo: 'Cita prioritaria',
-        fecha: fechaCitaSeleccionada,
-        hora: horaCitaSeleccionada,
-        nombre: document.getElementById('nombreCita').value.trim(),
-        telefono: document.getElementById('telefonoCita').value.trim(),
-        motivo: document.getElementById('motivoCita').value.trim()
-      };
-      let solicitudes = [];
-      try {
-        solicitudes = JSON.parse(localStorage.getItem('cardioContigoSolicitudesPrioritarias') || '[]');
-        if (!Array.isArray(solicitudes)) solicitudes = [];
-        solicitudes.push(solicitud);
-        localStorage.setItem('cardioContigoSolicitudesPrioritarias', JSON.stringify(solicitudes));
-        estadoCita.textContent = `Solicitud guardada en este navegador para ${nombreFecha(solicitud.fecha)} a las ${solicitud.hora}. No ha sido enviada ni confirmada por la clínica.`;
-        formCitaPrioritaria.hidden = true;
-      } catch (error) {
-        estadoCita.textContent = 'No se pudo guardar la solicitud en este navegador.';
-      }
-    });
-
-    document.getElementById('btnVolverCita').addEventListener('click', () => {
-      citaPrioritaria.hidden = true;
-      urgencias.hidden = false;
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    });
-
-    // Puntos de farmacia en un mapa de búsqueda de Google Maps.
     const mapaFarmacias = document.getElementById('mapaFarmacias');
     const enlaceFarmacias = document.getElementById('enlaceFarmacias');
     const origenFarmacia = document.getElementById('origenFarmacia');
     const notaFarmacia = document.getElementById('notaFarmacia');
 
     function abrirFarmacias() {
-      urgencias.hidden = true;
+      document.body.classList.add('vista-interna');
+      panel.hidden = true;
       farmacias.hidden = false;
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
 
-    document.getElementById('urgenciaMedicamentos').addEventListener('click', abrirFarmacias);
     document.getElementById('btnVolverFarmacias').addEventListener('click', () => {
       farmacias.hidden = true;
-      urgencias.hidden = false;
+      panel.hidden = false;
+      document.body.classList.remove('vista-interna');
       window.scrollTo({ top: 0, behavior: 'auto' });
     });
 
@@ -245,15 +56,16 @@
 
     // Contacto con profesionales de referencia.
     function abrirProfesionales() {
-      urgencias.hidden = true;
+      document.body.classList.add('vista-interna');
+      panel.hidden = true;
       contactoProfesionales.hidden = false;
       window.scrollTo({ top: 0, behavior: 'auto' });
     }
 
-    document.getElementById('urgenciaHablar').addEventListener('click', abrirProfesionales);
     document.getElementById('btnVolverProfesionales').addEventListener('click', () => {
       contactoProfesionales.hidden = true;
-      urgencias.hidden = false;
+      panel.hidden = false;
+      document.body.classList.remove('vista-interna');
       window.scrollTo({ top: 0, behavior: 'auto' });
     });
 
@@ -537,7 +349,7 @@
     });
     // Anima las vistas cuando pasan de ocultas a visibles.
     (() => {
-      const selectoresVista = '#pagina-publica, .panel, #formAcceso, #formVerificacion, #datosRegistro, #formRecordatorio, #formCitaPrioritaria';
+      const selectoresVista = '#pagina-publica, .panel, #formAcceso, #formVerificacion, #datosRegistro, #formRecordatorio';
 
       function procesarCambioVista(elemento) {
         if (!(elemento instanceof HTMLElement) || !elemento.matches(selectoresVista)) return;
@@ -569,146 +381,31 @@
         attributeFilter: ['hidden', 'style']
       });
     })();
-    // ---- Guía Interactiva para Preguntas Frecuentes y Corazón Guía ----
+    // ---- Mensajes del Corazón Guía ----
     (() => {
-      const configurarGuia = () => {
-        const btnIniciarGuia = document.getElementById('btnIniciarGuia');
-        const guiaCorazon = document.getElementById('guiaCorazon');
-        const textoGuiaCorazon = document.getElementById('textoGuiaCorazon');
-        const guiaInteractiva = document.getElementById('guiaInteractiva');
-        const buscadorEl = document.getElementById('buscador');
-        const listaFaq = document.getElementById('faqLista');
-        const tooltipBuscador = document.getElementById('tooltipBuscador');
-        const tooltipResultados = document.getElementById('tooltipResultados');
-        const tooltipAbrir = document.getElementById('tooltipAbrir');
+      const guiaCorazon = document.getElementById('guiaCorazon');
+      const textoGuiaCorazon = document.getElementById('textoGuiaCorazon');
+      let temporizadorCorazon = null;
 
-        let temporizadorCorazon = null;
-        window.mostrarMensajeCorazon = function(mensaje, duracion = 4000) {
-          if (!guiaCorazon || !textoGuiaCorazon) return;
-          if (temporizadorCorazon) window.clearTimeout(temporizadorCorazon);
-          textoGuiaCorazon.textContent = mensaje;
-          guiaCorazon.style.display = 'flex';
-          guiaCorazon.style.opacity = '1';
+      window.mostrarMensajeCorazon = function(mensaje, duracion = 4000) {
+        if (!guiaCorazon || !textoGuiaCorazon) return;
+        if (temporizadorCorazon) window.clearTimeout(temporizadorCorazon);
+        textoGuiaCorazon.textContent = mensaje;
+        guiaCorazon.style.display = 'flex';
+        guiaCorazon.style.opacity = '1';
+        temporizadorCorazon = window.setTimeout(() => {
+          guiaCorazon.style.opacity = '0';
           temporizadorCorazon = window.setTimeout(() => {
-            guiaCorazon.style.opacity = '0';
-            temporizadorCorazon = window.setTimeout(() => {
-              guiaCorazon.style.display = 'none';
-              temporizadorCorazon = null;
-            }, 300);
-          }, duracion);
-        };
-
-        if (btnIniciarGuia && buscadorEl && listaFaq && guiaInteractiva &&
-            tooltipBuscador && tooltipResultados && tooltipAbrir) {
-          const esperar = (milisegundos) =>
-            new Promise((resolver) => window.setTimeout(resolver, milisegundos));
-          const comportamientoScroll = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-            ? 'auto'
-            : 'smooth';
-
-          const posicionarTooltip = (tooltip, elemento, debajo = false) => {
-            const rect = elemento.getBoundingClientRect();
-            const topDeseado = window.scrollY + (debajo ? rect.bottom + 10 : rect.top - 45);
-            const topMaximo = window.scrollY + window.innerHeight - tooltip.offsetHeight - 12;
-            const leftMinimo = window.scrollX + 12;
-            const leftMaximo = window.scrollX + window.innerWidth - tooltip.offsetWidth - 12;
-            const leftDeseado = window.scrollX + rect.left + 20;
-            tooltip.style.top = Math.max(window.scrollY + 8, Math.min(topDeseado, topMaximo)) + 'px';
-            tooltip.style.left = Math.max(leftMinimo, Math.min(leftDeseado, leftMaximo)) + 'px';
-          };
-
-          const primerResultadoVisible = () =>
-            Array.from(listaFaq.querySelectorAll('.faq-item'))
-              .find((item) => !item.hidden && item.style.display !== 'none');
-
-          const limpiarGuia = () => {
-            tooltipBuscador.classList.remove('visible');
-            tooltipResultados.classList.remove('visible');
-            tooltipAbrir.classList.remove('visible');
-            buscadorEl.classList.remove('resaltado-guia');
-            listaFaq.querySelectorAll('.faq-item.resaltado-guia').forEach((item) => {
-              item.classList.remove('resaltado-guia');
-            });
-            buscadorEl.value = '';
-            buscadorEl.dispatchEvent(new Event('input', { bubbles: true }));
-            guiaInteractiva.style.display = 'flex';
-            btnIniciarGuia.disabled = false;
-          };
-
-          btnIniciarGuia.addEventListener('click', async () => {
-            if (btnIniciarGuia.disabled) return;
-            btnIniciarGuia.disabled = true;
-            guiaInteractiva.style.display = 'none';
-
-            try {
-              window.mostrarMensajeCorazon('¡Hola! Te enseñaré a usar esta sección.', 3000);
-              buscadorEl.scrollIntoView({ behavior: comportamientoScroll, block: 'center' });
-              await esperar(500);
-
-              buscadorEl.classList.add('resaltado-guia');
-              posicionarTooltip(tooltipBuscador, buscadorEl);
-              tooltipBuscador.classList.add('visible');
-
-              buscadorEl.value = '';
-              for (const caracter of 'cirugía') {
-                buscadorEl.value += caracter;
-                buscadorEl.dispatchEvent(new Event('input', { bubbles: true }));
-                await esperar(150);
-              }
-
-              tooltipBuscador.classList.remove('visible');
-              await esperar(800);
-              buscadorEl.classList.remove('resaltado-guia');
-
-              const primerFaqItem = primerResultadoVisible();
-              if (!primerFaqItem) {
-                window.mostrarMensajeCorazon('No encontré resultados para esta búsqueda.', 3500);
-                await esperar(3500);
-                return;
-              }
-
-              window.mostrarMensajeCorazon('¡Genial! Aquí ves los resultados.', 3500);
-              primerFaqItem.scrollIntoView({ behavior: comportamientoScroll, block: 'center' });
-              await esperar(500);
-              primerFaqItem.classList.add('resaltado-guia');
-              posicionarTooltip(tooltipResultados, primerFaqItem);
-              tooltipResultados.classList.add('visible');
-
-              await esperar(2500);
-              tooltipResultados.classList.remove('visible');
-
-              const botonPregunta = primerFaqItem.querySelector('.faq-pregunta');
-              if (botonPregunta && !primerFaqItem.classList.contains('abierta')) {
-                botonPregunta.click();
-              }
-              await esperar(150);
-              posicionarTooltip(tooltipAbrir, primerFaqItem, true);
-              tooltipAbrir.classList.add('visible');
-              window.mostrarMensajeCorazon('Haz clic aquí para leer más.', 4000);
-              await esperar(4000);
-            } catch (error) {
-              console.error('No se pudo completar la guía interactiva:', error);
-            } finally {
-              limpiarGuia();
-            }
-          });
-        }
-
-        const mostrarMensaje = window.mostrarMensajeCorazon;
-        document.getElementById('cardCitas')?.addEventListener('click', () => {
-          mostrarMensaje('Aquí puedes agendar y ver tus recordatorios.');
-        });
-        document.getElementById('cardUrgencias')?.addEventListener('click', () => {
-          mostrarMensaje('En caso de emergencia, usa esta sección.');
-        });
-        document.getElementById('cardCuidados')?.addEventListener('click', () => {
-          mostrarMensaje('Aprende a cuidarte aquí.');
-        });
+            guiaCorazon.style.display = 'none';
+            temporizadorCorazon = null;
+          }, 300);
+        }, duracion);
       };
 
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', configurarGuia, { once: true });
-      } else {
-        configurarGuia();
-      }
+      document.getElementById('cardCitas')?.addEventListener('click', () => {
+        window.mostrarMensajeCorazon('Aquí puedes agendar y ver tus recordatorios.');
+      });
+      document.getElementById('cardCuidados')?.addEventListener('click', () => {
+        window.mostrarMensajeCorazon('Aprende a cuidarte aquí.');
+      });
     })();
