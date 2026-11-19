@@ -161,33 +161,90 @@
     });
 
 
-    // ---- Lógica para la interfaz "Sobre Nosotros" ----
+    // Navegación superior compartida por la página pública y las vistas internas.
     (() => {
-      const btnNavNosotros = document.getElementById('btnNavNosotros');
-      const seccionNosotros = document.getElementById('sobreNosotros');
-      const btnVolverInicio = document.getElementById('btnVolverInicio');
-      const paginaPublicaNosotros = document.getElementById('pagina-publica');
+      const paginaPublicaNavegacion = document.getElementById('pagina-publica');
+      const rutasNavegacion = {
+        nosotros: document.getElementById('sobreNosotros'),
+        ayuda: document.getElementById('seccionAyuda'),
+        contacto: document.getElementById('seccionContacto')
+      };
 
-      if (btnNavNosotros && seccionNosotros && btnVolverInicio && paginaPublicaNosotros) {
-        btnNavNosotros.addEventListener('click', (e) => {
-          e.preventDefault();
-          paginaPublicaNosotros.style.display = 'none';
-          seccionNosotros.hidden = false;
-          window.scrollTo({ top: 0, behavior: 'auto' });
-        });
-
-        btnVolverInicio.addEventListener('click', () => {
-          seccionNosotros.hidden = true;
-          paginaPublicaNosotros.style.display = 'block';
-          window.scrollTo({ top: 0, behavior: 'auto' });
-        });
+      function ocultarPanelesNavegacion() {
+        document.querySelectorAll('.panel').forEach((vista) => { vista.hidden = true; });
       }
+
+      function mostrarVistaPublicaNavegacion(id) {
+        ocultarPanelesNavegacion();
+        document.querySelectorAll('#pagina-publica > .vista-publica').forEach((vista) => {
+          vista.hidden = vista.id !== id;
+        });
+        paginaPublicaNavegacion.style.display = 'block';
+        document.body.classList.toggle('vista-interna', id !== 'inicio');
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
+
+      function mostrarInicioNavegacion() {
+        ocultarPanelesNavegacion();
+        if (document.body.classList.contains('sesion-activa')) {
+          document.body.classList.remove('vista-interna');
+          paginaPublicaNavegacion.style.display = 'none';
+          document.getElementById('panel').hidden = false;
+          window.scrollTo({ top: 0, behavior: 'auto' });
+          return;
+        }
+        mostrarVistaPublicaNavegacion('inicio');
+      }
+
+      function mostrarServiciosNavegacion() {
+        mostrarVistaPublicaNavegacion('servicios');
+      }
+
+      function mostrarSeccionNavegacion(nombre) {
+        const vista = rutasNavegacion[nombre];
+        if (!vista) return;
+        ocultarPanelesNavegacion();
+        document.querySelectorAll('#pagina-publica > .vista-publica').forEach((vistaPublica) => {
+          vistaPublica.hidden = true;
+        });
+        paginaPublicaNavegacion.style.display = 'none';
+        document.body.classList.add('vista-interna');
+        vista.hidden = false;
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
+
+      document.querySelectorAll('.ls-nav a').forEach((enlace) => {
+        enlace.addEventListener('click', (evento) => {
+          evento.preventDefault();
+          const destino = enlace.getAttribute('href').slice(1);
+          if (destino === 'inicio') mostrarInicioNavegacion();
+          else if (destino === 'servicios') mostrarServiciosNavegacion();
+          else mostrarSeccionNavegacion(destino);
+        });
+      });
+
+      document.querySelector('.ls-brand').addEventListener('click', (evento) => {
+        evento.preventDefault();
+        mostrarInicioNavegacion();
+      });
+
+      document.getElementById('btnIniciar').addEventListener('click', (evento) => {
+        evento.preventDefault();
+        abrirAcceso('login');
+      });
+
+      document.querySelector('.ls-hero-cta').addEventListener('click', (evento) => {
+        evento.preventDefault();
+        mostrarServiciosNavegacion();
+      });
+
+      ['btnVolverInicio', 'btnVolverAyuda', 'btnVolverContacto'].forEach((id) => {
+        document.getElementById(id).addEventListener('click', mostrarInicioNavegacion);
+      });
     })();
+
     // ---- Lógica para la interfaz "Ayuda / Reportar Problema" ----
     (() => {
-      const btnNavAyuda = document.querySelector('.ls-nav a[href="#ayuda"]');
-      const seccionAyuda = document.getElementById('seccionAyuda');
-      const btnVolverAyuda = document.getElementById('btnVolverAyuda');
       const formReporte = document.getElementById('formReporte');
       const mensajeReporte = document.getElementById('mensajeReporte');
       const STORAGE_KEY = 'reportesTecnicos';
@@ -247,22 +304,7 @@
         }
       }
 
-      if (btnNavAyuda && seccionAyuda && btnVolverAyuda && formReporte && mensajeReporte) {
-        btnNavAyuda.addEventListener('click', (e) => {
-          e.preventDefault();
-          const paginaPublica = document.getElementById('pagina-publica');
-          if (paginaPublica) paginaPublica.style.display = 'none';
-          seccionAyuda.hidden = false;
-          window.scrollTo({ top: 0, behavior: 'auto' });
-        });
-
-        btnVolverAyuda.addEventListener('click', () => {
-          seccionAyuda.hidden = true;
-          const paginaPublica = document.getElementById('pagina-publica');
-          if (paginaPublica) paginaPublica.style.display = 'block';
-          window.scrollTo({ top: 0, behavior: 'auto' });
-        });
-
+      if (formReporte && mensajeReporte) {
         formReporte.addEventListener('submit', async (e) => {
           e.preventDefault();
           if (!formReporte.checkValidity()) {
@@ -307,46 +349,6 @@
       }
     })();
 
-    // ---- Lógica para la interfaz "Contacto" ----
-    (() => {
-      const btnNavContacto = document.querySelector('.ls-nav a[href="#contacto"]');
-      const seccionContacto = document.getElementById('seccionContacto');
-      const btnVolverContacto = document.getElementById('btnVolverContacto');
-      const paginaPublicaContacto = document.getElementById('pagina-publica');
-
-      if (btnNavContacto && seccionContacto && btnVolverContacto && paginaPublicaContacto) {
-        btnNavContacto.addEventListener('click', (e) => {
-          e.preventDefault();
-          paginaPublicaContacto.style.display = 'none';
-          seccionContacto.hidden = false;
-          window.scrollTo({ top: 0, behavior: 'auto' });
-        });
-
-        btnVolverContacto.addEventListener('click', () => {
-          seccionContacto.hidden = true;
-          paginaPublicaContacto.style.display = 'block';
-          window.scrollTo({ top: 0, behavior: 'auto' });
-        });
-      }
-    })();
-    // ---- Script para inyectar el logo en las pantallas internas ----
-    document.addEventListener('DOMContentLoaded', () => {
-      const vistasInternas = document.querySelectorAll('.panel');
-
-      vistasInternas.forEach((vista) => {
-        if (!vista.querySelector('.header-interno')) {
-          const header = document.createElement('header');
-          header.className = 'header-interno';
-          header.innerHTML = `
-            <div class="logo-interno">
-              <img src="LOGO_SINL.png" alt="Logo Latido Seguro">
-              <span>Latido Seguro</span>
-            </div>
-          `;
-          vista.prepend(header);
-        }
-      });
-    });
     // Anima las vistas cuando pasan de ocultas a visibles.
     (() => {
       const selectoresVista = '#pagina-publica, .panel, #formAcceso, #formVerificacion, #datosRegistro, #formRecordatorio';
