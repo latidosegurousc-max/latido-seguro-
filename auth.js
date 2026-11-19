@@ -26,8 +26,6 @@
     const necesitaServidor = window.location.protocol === 'file:';
     if (necesitaServidor) {
       document.getElementById('avisoServidor').hidden = false;
-      btnIniciar.disabled = true;
-      acceso.querySelectorAll('button').forEach((boton) => { boton.disabled = true; });
     }
     const datosRegistro = document.getElementById('datosRegistro');
     const camposRegistro = [
@@ -40,7 +38,6 @@
     let modoAutenticacion = 'login';
 
     function abrirAcceso(modo) {
-      if (necesitaServidor) return;
       modoAutenticacion = modo;
       form.hidden = false;
       formVerificacion.hidden = true;
@@ -217,7 +214,10 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (necesitaServidor) return;
+      if (necesitaServidor) {
+        mensaje.textContent = 'Para iniciar sesión o crear una cuenta, ejecuta la página desde el servidor indicado arriba.';
+        return;
+      }
       mensaje.textContent = '';
 
       if (!correoAcceso.checkValidity()) {
