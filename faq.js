@@ -399,6 +399,105 @@ buscador.addEventListener('input', () => {
   if (categoriaActual) categoriaActual.hidden = visiblesEnCategoria === 0;
   sinResultados.style.display = visibles === 0 ? 'block' : 'none';
 });
+
+// Sugerencias predictivas relacionadas con las preguntas frecuentes clínicas.
+const SUGERENCIAS_CLINICAS = [
+  '¿Cuándo debo acudir a urgencias por dolor en el pecho?',
+  '¿Qué hacer si tengo falta de aire repentina?',
+  '¿Es normal sentir palpitaciones después de la cirugía?',
+  '¿Qué hacer si la herida quirúrgica se abre o supura?',
+  '¿Qué significa un chasquido en el esternón?',
+  '¿Cuándo puedo retomar mis actividades normales?',
+  '¿Cómo manejar la ansiedad o el miedo después de un infarto?',
+  '¿Qué es el síndrome de Marfán y cómo afecta al corazón?',
+  '¿Qué cuidados debo tener con una válvula mecánica?',
+  '¿Cuáles son los niveles normales de colesterol?',
+  '¿Qué es el índice aterogénico de Castelli?',
+  '¿Cómo prevenir la obesidad y el sedentarismo?',
+  '¿Cuáles son los síntomas de un derrame cerebral (ictus)?',
+  '¿Qué hacer ante efectos secundarios de los anticoagulantes?',
+  '¿Cómo afecta el estrés a mi corazón?',
+  '¿Qué hacer si presento mareos o vértigo constante?',
+  '¿Cuánta agua debo tomar si tengo problemas cardíacos?',
+  '¿Puedo consumir alcohol después de una cirugía de corazón?',
+  '¿Cómo debe ser mi alimentación tras la revascularización?',
+  '¿Qué es el programa Fast Track de recuperación rápida?'
+];
+
+const contenedorBuscador = document.querySelector('.buscador');
+let cajaSugerencias = null;
+
+if (contenedorBuscador) {
+  cajaSugerencias = document.createElement('div');
+  cajaSugerencias.style.cssText = `
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none;
+  `;
+  contenedorBuscador.style.position = 'relative';
+  contenedorBuscador.appendChild(cajaSugerencias);
+}
+
+buscador.addEventListener('input', () => {
+  if (!cajaSugerencias) return;
+  const texto = normalizar(buscador.value.trim());
+
+  if (texto.length < 2) {
+    cajaSugerencias.style.display = 'none';
+    return;
+  }
+
+  const coincidencias = SUGERENCIAS_CLINICAS
+    .filter((pregunta) => normalizar(pregunta).includes(texto))
+    .slice(0, 5);
+
+  cajaSugerencias.replaceChildren();
+  coincidencias.forEach((sugerencia) => {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.style.cssText = `
+      display: block;
+      width: 100%;
+      padding: 12px 15px;
+      cursor: pointer;
+      border: 0;
+      border-bottom: 1px solid #eee;
+      background: white;
+      color: #333;
+      text-align: left;
+      font-size: 0.95rem;
+    `;
+    item.textContent = sugerencia;
+    item.addEventListener('mouseenter', () => { item.style.background = '#f0f8ff'; });
+    item.addEventListener('mouseleave', () => { item.style.background = 'white'; });
+    item.addEventListener('click', () => {
+      buscador.value = sugerencia;
+      buscador.dispatchEvent(new Event('input', { bubbles: true }));
+      cajaSugerencias.style.display = 'none';
+    });
+    cajaSugerencias.appendChild(item);
+  });
+  cajaSugerencias.style.display = coincidencias.length ? 'block' : 'none';
+});
+
+document.addEventListener('click', (evento) => {
+  if (
+    cajaSugerencias
+    && evento.target instanceof Node
+    && !contenedorBuscador.contains(evento.target)
+  ) {
+    cajaSugerencias.style.display = 'none';
+  }
+});
+
   let videoTrigger = null;
   function abrirVideo(videoId) {
     const modal = document.getElementById('modalVideo');
@@ -463,3 +562,128 @@ buscador.addEventListener('input', () => {
       abrirAcceso('login');
     });
   });
+
+// ==========================================
+// TUTORIAL INTERACTIVO (PASO A PASO)
+// ==========================================
+const PASOS_TUTORIAL = [
+  {
+    titulo: '¡Bienvenido al Centro de Ayuda!',
+    texto: 'Este espacio está diseñado para resolver tus dudas médicas. Te enseñaremos a usar el buscador en menos de 10 segundos.',
+    elemento: '#guiaInteractiva'
+  },
+  {
+    titulo: 'Paso 1: Escribe tu duda',
+    texto: "Si tienes una inquietud (por ejemplo: 'dolor de pecho' o 'medicamentos'), escribe aquí. El sistema buscará en toda la base de datos médica.",
+    elemento: '#buscador'
+  },
+  {
+    titulo: 'Paso 2: Filtro inteligente',
+    texto: 'Mientras escribes, las preguntas se van filtrando. Si no ves tu respuesta, no te preocupes, puedes escribirle a tu médico.',
+    elemento: '#faqLista'
+  },
+  {
+    titulo: 'Paso 3: Lee las respuestas',
+    texto: 'Haz clic sobre cualquier pregunta para desplegar la respuesta. Está todo explicado paso a paso.',
+    elemento: '.faq-pregunta'
+  },
+  {
+    titulo: 'Paso 4: Explora por categorías',
+    texto: 'Si prefieres buscar manualmente, puedes desplazarte hacia abajo para ver las categorías: Signos de alarma, Cuidados, Medicamentos, etc.',
+    elemento: '.faq-categoria'
+  }
+];
+
+let pasoActual = 0;
+let elementoResaltado = null;
+let desbordamientoAnterior = '';
+const overlay = document.getElementById('tutorialOverlay');
+const tooltip = document.getElementById('tutorialTooltip');
+const titleEl = document.getElementById('tutorialTitle');
+const textEl = document.getElementById('tutorialText');
+const btnSiguiente = document.getElementById('btnTutorialSiguiente');
+const btnCerrar = document.getElementById('btnTutorialCerrar');
+const btnIniciarGuia = document.getElementById('btnIniciarGuia');
+
+function cerrarTutorial() {
+  if (!overlay) return;
+  overlay.hidden = true;
+  document.body.style.overflow = desbordamientoAnterior;
+  if (elementoResaltado) {
+    elementoResaltado.classList.remove('tutorial-elemento-resaltado');
+    elementoResaltado = null;
+  }
+}
+
+function mostrarPaso(index) {
+  if (!overlay || !tooltip || !titleEl || !textEl || !btnSiguiente) return;
+  if (elementoResaltado) {
+    elementoResaltado.classList.remove('tutorial-elemento-resaltado');
+    elementoResaltado = null;
+  }
+
+  if (index >= PASOS_TUTORIAL.length) {
+    cerrarTutorial();
+    return;
+  }
+
+  const paso = PASOS_TUTORIAL[index];
+  elementoResaltado = document.querySelector(paso.elemento);
+  if (!elementoResaltado) {
+    mostrarPaso(index + 1);
+    return;
+  }
+
+  pasoActual = index;
+  titleEl.textContent = paso.titulo;
+  textEl.textContent = paso.texto;
+  btnSiguiente.textContent = index === PASOS_TUTORIAL.length - 1
+    ? 'Finalizar ✓'
+    : 'Siguiente →';
+  elementoResaltado.classList.add('tutorial-elemento-resaltado');
+  elementoResaltado.scrollIntoView({
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    block: 'center'
+  });
+
+  window.requestAnimationFrame(() => {
+    if (!elementoResaltado || overlay.hidden) return;
+    const rect = elementoResaltado.getBoundingClientRect();
+    const anchoTooltip = tooltip.offsetWidth;
+    const altoTooltip = tooltip.offsetHeight;
+    const left = Math.max(12, Math.min(rect.left, window.innerWidth - anchoTooltip - 12));
+    const topDebajo = rect.bottom + 15;
+    const top = topDebajo + altoTooltip <= window.innerHeight - 12
+      ? topDebajo
+      : Math.max(12, rect.top - altoTooltip - 15);
+    tooltip.style.position = 'fixed';
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+  });
+}
+
+function iniciarTutorial() {
+  if (!overlay) return;
+  const buscadorFaq = document.getElementById('buscador');
+  if (buscadorFaq) {
+    buscadorFaq.value = '';
+    buscadorFaq.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  if (overlay.parentElement !== document.body) {
+    document.body.appendChild(overlay);
+  }
+  pasoActual = 0;
+  desbordamientoAnterior = document.body.style.overflow;
+  overlay.hidden = false;
+  document.body.style.overflow = 'hidden';
+  mostrarPaso(pasoActual);
+}
+
+if (btnIniciarGuia && overlay && btnSiguiente && btnCerrar) {
+  btnIniciarGuia.addEventListener('click', iniciarTutorial);
+  btnSiguiente.addEventListener('click', () => mostrarPaso(pasoActual + 1));
+  btnCerrar.addEventListener('click', cerrarTutorial);
+  document.addEventListener('keydown', (evento) => {
+    if (!overlay.hidden && evento.key === 'Escape') cerrarTutorial();
+  });
+}
