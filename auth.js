@@ -1,584 +1,361 @@
-    // ---- Pantalla de citas y recordatorios ----
-    const cardCitas = document.getElementById('cardCitas');
-    const agenda = document.getElementById('agenda');
-    const btnVolverAgenda = document.getElementById('btnVolverAgenda');
-    const calendarioDias = document.getElementById('calendarioDias');
-    const mesCalendario = document.getElementById('mesCalendario');
-    const formRecordatorio = document.getElementById('formRecordatorio');
-    const fechaRecordatorio = document.getElementById('fechaRecordatorio');
-    const horaRecordatorio = document.getElementById('horaRecordatorio');
-    const detalleRecordatorio = document.getElementById('detalleRecordatorio');
-    const canalRecordatorio = document.getElementById('canalRecordatorio');
-    const campoContacto = document.getElementById('campoContacto');
-    const labelContacto = document.getElementById('labelContacto');
-    const contactoRecordatorio = document.getElementById('contactoRecordatorio');
-    const agendaMensaje = document.getElementById('agendaMensaje');
-    const recordatoriosDia = document.getElementById('recordatoriosDia');
-    const tituloRecordatoriosDia = document.getElementById('tituloRecordatoriosDia');
-    const opcionesAgenda = document.querySelectorAll('.agenda-opcion');
-    const hoy = new Date();
-    let fechaSeleccionada = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-    let mesVisible = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    let tipoRecordatorio = '';
-    let recordatorios = [];
-    let fechaConfirmada = '';
-    let contactoInfo = null;
-    let guardandoRecordatorio = false;
-    let claveSolicitud = nuevaClaveSolicitud();
-    let confirmacionPendiente = null;
-    const agendaAviso = document.getElementById('agendaAviso');
-    const fechaConfirmadaTexto = document.getElementById('fechaConfirmadaTexto');
-    const campoDestino = document.getElementById('campoDestino');
-    const textoDestino = document.getElementById('textoDestino');
-    const labelUsarOtro = document.getElementById('labelUsarOtro');
-    const usarOtroContacto = document.getElementById('usarOtroContacto');
-    const textoUsarOtro = document.getElementById('textoUsarOtro');
-    const avisoCanal = document.getElementById('avisoCanal');
-    const notaCanal = document.getElementById('notaCanal');
-    const modalFecha = document.getElementById('modalConfirmarFecha');
-    const modalFechaTexto = document.getElementById('modalFechaTexto');
-    const btnConfirmarFecha = document.getElementById('btnConfirmarFecha');
-    const btnCancelarFecha = document.getElementById('btnCancelarFecha');
-    const TIPOS_CITA = ['Cita de control', 'Cita prioritaria'];
+    const btnIniciar = document.getElementById('btnIniciar');
+    const modoIniciar = document.getElementById('modoIniciar');
+    const modoCrear = document.getElementById('modoCrear');
+    const selectorModoAcceso = document.querySelector('.modo-acceso');
+    const acceso = document.getElementById('acceso');
+    const form = document.getElementById('formAcceso');
+    const formVerificacion = document.getElementById('formVerificacion');
+    const correoVerificacion = document.getElementById('correoVerificacion');
+    const codigoVerificacion = document.getElementById('codigoVerificacion');
+    const mensajeVerificacion = document.getElementById('mensajeVerificacion');
+    const btnConfirmarVerificacion = document.getElementById('btnConfirmarVerificacion');
+    const btnReenviarCodigo = document.getElementById('btnReenviarCodigo');
+    let correoPendienteVerificacion = '';
+    const correoAcceso = document.getElementById('correoAcceso');
+    const clave = document.getElementById('clave');
+    const btnMostrar = document.getElementById('btnMostrar');
+    const textoBtnMostrar = document.getElementById('textoBtnMostrar');
+    const mensaje = document.getElementById('mensaje');
+    const tituloAcceso = document.getElementById('tituloAcceso');
+    const ayudaAcceso = document.getElementById('ayudaAcceso');
+    const ayudaClave = document.getElementById('ayudaClave');
+    const btnContinuarRegistro = document.getElementById('btnContinuarRegistro');
+    const btnEnviarAcceso = document.getElementById('btnEnviarAcceso');
+    const necesitaServidor = window.location.protocol === 'file:';
+    if (necesitaServidor) {
+      document.getElementById('avisoServidor').hidden = false;
+      btnIniciar.disabled = true;
+      acceso.querySelectorAll('button').forEach((boton) => { boton.disabled = true; });
+    }
+    const datosRegistro = document.getElementById('datosRegistro');
+    const camposRegistro = [
+      document.getElementById('nombrePaciente'),
+      document.getElementById('apellidoPaciente'),
+      document.getElementById('tipoDocumento'),
+      document.getElementById('documentoPaciente'),
+      document.getElementById('celularPaciente')
+    ];
+    let modoAutenticacion = 'login';
 
-    function mostrarMensajeAgenda(lineas) {
-      const destino = formRecordatorio.hidden ? agendaAviso : agendaMensaje;
-      agendaAviso.replaceChildren();
-      agendaMensaje.replaceChildren();
-      lineas.forEach(([nivel, texto]) => {
-        const linea = document.createElement('span');
-        linea.dataset.nivel = nivel;
-        linea.textContent = texto;
-        destino.appendChild(linea);
+    function abrirAcceso(modo) {
+      if (necesitaServidor) return;
+      modoAutenticacion = modo;
+      form.hidden = false;
+      formVerificacion.hidden = true;
+      selectorModoAcceso.hidden = false;
+      const creandoCuenta = modo === 'registro';
+      modoIniciar.parentElement.dataset.modo = creandoCuenta ? 'registro' : 'login';
+      tituloAcceso.textContent = creandoCuenta ? 'Crea tu cuenta' : 'Ingresa a tu cuenta';
+      ayudaAcceso.textContent = creandoCuenta
+        ? 'Primero registra tu correo y contraseña; después completa tus datos.'
+        : 'Usa el correo personal y la contraseña de tu cuenta.';
+      correoAcceso.autocomplete = creandoCuenta ? 'email' : 'username';
+      clave.autocomplete = creandoCuenta ? 'new-password' : 'current-password';
+      ayudaClave.hidden = !creandoCuenta;
+      datosRegistro.hidden = true;
+      camposRegistro.forEach((campo) => { campo.required = creandoCuenta; });
+      btnContinuarRegistro.hidden = !creandoCuenta;
+      btnEnviarAcceso.textContent = creandoCuenta ? 'Crear cuenta' : 'Iniciar sesión';
+      modoIniciar.setAttribute('aria-pressed', String(!creandoCuenta));
+      modoCrear.setAttribute('aria-pressed', String(creandoCuenta));
+      btnIniciar.setAttribute('aria-expanded', 'true');
+      mensaje.textContent = '';
+      acceso.classList.add('abierto');
+      setTimeout(() => {
+        acceso.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        correoAcceso.focus({ preventScroll: true });
+      }, 200);
+    }
+
+    function mostrarVerificacion(email, textoMensaje = '') {
+      correoPendienteVerificacion = email;
+      correoVerificacion.textContent = email;
+      codigoVerificacion.value = '';
+      mensajeVerificacion.textContent = textoMensaje;
+      tituloAcceso.textContent = 'Verifica tu correo';
+      ayudaAcceso.textContent = 'Tu cuenta quedará activa cuando confirmes el código.';
+      form.hidden = true;
+      formVerificacion.hidden = false;
+      selectorModoAcceso.hidden = true;
+      formVerificacion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      codigoVerificacion.focus({ preventScroll: true });
+    }
+
+    btnIniciar.addEventListener('click', () => abrirAcceso('login'));
+    modoIniciar.addEventListener('click', () => abrirAcceso('login'));
+    modoCrear.addEventListener('click', () => abrirAcceso('registro'));
+
+    const btnIrCrearCuenta = document.getElementById('btnIrCrearCuenta');
+    const btnIrIniciarSesion = document.getElementById('btnIrIniciarSesion');
+    const cardCrearCuenta = document.getElementById('cardCrearCuenta');
+
+    if (btnIrCrearCuenta) {
+      btnIrCrearCuenta.addEventListener('click', (event) => {
+        event.stopPropagation();
+        abrirAcceso('registro');
       });
     }
 
-    function horaLegible12(hora) {
-      const [h, m] = hora.split(':').map(Number);
-      return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'a. m.' : 'p. m.'}`;
-    }
-
-    function fechaHoraAviso(texto) {
-      const [fecha, hora] = texto.split(' ');
-      const [anio, mes, dia] = fecha.split('-');
-      return `${dia}/${mes}/${anio} a las ${horaLegible12(hora)}`;
-    }
-
-    const ETIQUETA_AVISO = { CONFIRMACION: 'Confirmación', RECORDATORIO_DIA: 'Recordatorio del día de la cita', RECORDATORIO: 'Aviso a la hora indicada' };
-
-    function describirAviso(aviso) {
-      const descripcion = describirAvisoBase(aviso);
-      descripcion.texto = descripcion.texto.replace(/\.\.$/, '.'); // evita "p. m.."
-      return descripcion;
-    }
-
-    function describirAvisoBase(aviso) {
-      const nombre = ETIQUETA_AVISO[aviso.clase] || 'Aviso';
-      const o = aviso.clase === 'CONFIRMACION' ? 'a' : 'o';
-      const motivo = aviso.motivo ? ` (${aviso.motivo})` : '';
-      switch (aviso.estado) {
-        case 'ENVIADO': return { nivel: 'ok', texto: `${nombre} por ${aviso.canal}: enviad${o} el ${fechaHoraAviso(aviso.enviada_en)}.` };
-        case 'PROCESANDO': return { nivel: 'info', texto: `${nombre} por ${aviso.canal}: enviándose ahora.` };
-        case 'PENDIENTE':
-          return aviso.intentos > 0
-            ? { nivel: 'info', texto: `${nombre} por ${aviso.canal}: pendiente, se reintentará automáticamente${motivo}.` }
-            : aviso.clase === 'CONFIRMACION'
-              ? { nivel: 'info', texto: `${nombre} por ${aviso.canal}: pendiente de envío.` }
-              : { nivel: 'info', texto: `${nombre} por ${aviso.canal}: programad${o} para el ${fechaHoraAviso(aviso.programada_para)}.` };
-        case 'FALLIDO': return { nivel: 'error', texto: `${nombre} por ${aviso.canal}: no se pudo enviar${motivo}.` };
-        case 'SIN_CONFIGURAR': return { nivel: 'error', texto: `${nombre} por ${aviso.canal}: no se enviará. ${aviso.motivo || 'El servicio de mensajería no está configurado.'}` };
-        case 'VENCIDO': return { nivel: 'info', texto: `${nombre} por ${aviso.canal}: ya no se enviará porque pasó el momento útil.` };
-        default: return { nivel: 'info', texto: `${nombre} por ${aviso.canal}: ${aviso.estado}.` };
-      }
-    }
-
-    function resumenGuardado(recordatorio, creado) {
-      const lineas = [['ok', creado === false
-        ? 'Esta solicitud ya estaba guardada; no se creó una cita duplicada.'
-        : (recordatorio.es_cita ? 'Tu cita quedó guardada.' : 'Tu recordatorio quedó guardado.')]];
-      const avisos = recordatorio.notificaciones || [];
-      avisos.forEach((aviso) => {
-        const { nivel, texto } = describirAviso(aviso);
-        lineas.push([nivel, texto]);
+    if (btnIrIniciarSesion) {
+      btnIrIniciarSesion.addEventListener('click', (event) => {
+        event.stopPropagation();
+        abrirAcceso('login');
       });
-      if (recordatorio.es_cita && !avisos.some((a) => a.clase === 'RECORDATORIO_DIA')) {
-        lineas.push(['info', 'No se programó el recordatorio del día porque la cita es muy próxima.']);
-      }
-      return lineas;
     }
 
-    function actualizarFechaConfirmadaTexto() {
-      fechaConfirmadaTexto.textContent = fechaConfirmada ? `Fecha confirmada: ${nombreFecha(fechaConfirmada)}` : '';
+    if (cardCrearCuenta) {
+      cardCrearCuenta.addEventListener('click', (event) => {
+        if (!event.target.closest('button')) abrirAcceso('registro');
+      });
+      cardCrearCuenta.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          abrirAcceso('registro');
+        }
+      });
     }
 
-    function actualizarNotaCanal() {
-      notaCanal.textContent = TIPOS_CITA.includes(tipoRecordatorio)
-        ? 'La cita queda guardada en tu cuenta. Al guardarla recibirás un aviso de confirmación y, el día de la cita, un recordatorio automático (hora de Colombia).'
-        : 'El recordatorio queda guardado en tu cuenta y recibirás un aviso a la hora indicada (hora de Colombia).';
-    }
-
-    // ---- Confirmación de la fecha elegida ----
-    function pedirConfirmacionFecha(textoFecha, origen) {
-      const esCita = !tipoRecordatorio || TIPOS_CITA.includes(tipoRecordatorio);
-      modalFechaTexto.textContent = `¿Estás seguro de que deseas programar tu ${esCita ? 'cita' : 'recordatorio'} para el ${nombreFecha(textoFecha).toLowerCase()}?`;
-      confirmacionPendiente = { fecha: textoFecha, origen };
-      if (!modalFecha.open) modalFecha.showModal();
-    }
-
-    function aplicarFechaConfirmada(textoFecha) {
-      fechaConfirmada = textoFecha;
-      fechaSeleccionada = fechaDesdeTexto(textoFecha);
-      mesVisible = new Date(fechaSeleccionada.getFullYear(), fechaSeleccionada.getMonth(), 1);
-      fechaRecordatorio.value = textoFecha;
-      claveSolicitud = nuevaClaveSolicitud();
-      actualizarFechaConfirmadaTexto();
-      dibujarCalendario();
-      dibujarRecordatoriosDia();
-      mostrarMensajeAgenda([['ok', tipoRecordatorio
-        ? `Fecha confirmada: ${nombreFecha(textoFecha)}. Completa los datos y guarda.`
-        : `Fecha confirmada: ${nombreFecha(textoFecha)}. Ahora elige qué quieres programar.`]]);
-      const destino = tipoRecordatorio ? horaRecordatorio : document.querySelector('.agenda-opcion');
-      if (destino) destino.focus({ preventScroll: false });
-    }
-
-    function cancelarConfirmacionFecha() {
-      const pendiente = confirmacionPendiente;
-      confirmacionPendiente = null;
-      if (modalFecha.open) modalFecha.close();
-      if (!pendiente) return;
-      if (pendiente.origen === 'campo') {
-        fechaRecordatorio.value = fechaConfirmada;
-        fechaRecordatorio.focus();
-      } else {
-        const dia = calendarioDias.querySelector('.dia-calendario.seleccionado');
-        if (dia) dia.focus();
-      }
-    }
-
-    btnConfirmarFecha.addEventListener('click', () => {
-      const pendiente = confirmacionPendiente;
-      confirmacionPendiente = null;
-      if (modalFecha.open) modalFecha.close();
-      if (pendiente) aplicarFechaConfirmada(pendiente.fecha);
+    btnMostrar.addEventListener('click', () => {
+      const mostrarClave = clave.type !== 'text';
+      clave.type = mostrarClave ? 'text' : 'password';
+      textoBtnMostrar.textContent = mostrarClave ? 'Ocultar' : 'Mostrar';
+      btnMostrar.setAttribute('aria-pressed', String(mostrarClave));
+      btnMostrar.setAttribute('aria-label', mostrarClave ? 'Ocultar contraseña' : 'Mostrar contraseña');
     });
-    btnCancelarFecha.addEventListener('click', cancelarConfirmacionFecha);
-    modalFecha.addEventListener('close', () => { if (confirmacionPendiente) cancelarConfirmacionFecha(); });
-    modalFecha.addEventListener('click', (e) => { if (e.target === modalFecha) cancelarConfirmacionFecha(); });
 
+    function ocultarClave() {
+      clave.type = 'password';
+      textoBtnMostrar.textContent = 'Mostrar';
+      btnMostrar.setAttribute('aria-pressed', 'false');
+      btnMostrar.setAttribute('aria-label', 'Mostrar contraseña');
+    }
 
-    async function solicitarApiRecordatorios(ruta, opciones = {}) {
+    const elDocumentoPaciente = document.getElementById('documentoPaciente');
+    if (elDocumentoPaciente) {
+      elDocumentoPaciente.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '');
+      });
+    }
+
+    const formatoClaveAdecuada = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,128}$/;
+
+    btnContinuarRegistro.addEventListener('click', () => {
+      mensaje.textContent = '';
+      if (!correoAcceso.checkValidity()) {
+        correoAcceso.reportValidity();
+        return;
+      }
+      if (!formatoClaveAdecuada.test(clave.value)) {
+        mensaje.textContent = 'La contraseña debe tener al menos 10 caracteres, con mayúscula, minúscula y número.';
+        clave.focus();
+        return;
+      }
+      datosRegistro.hidden = false;
+      datosRegistro.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('nombrePaciente').focus({ preventScroll: true });
+    });
+
+    async function enviarSolicitudApi(ruta, contenido) {
       let respuesta;
       try {
         respuesta = await fetch(window.API_BASE_URL + ruta, {
-          ...opciones,
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          headers: {
-            ...(opciones.headers || {}),
-            ...(opciones.body ? { 'Content-Type': 'application/json' } : {})
-          }
+          body: JSON.stringify(contenido)
         });
       } catch (error) {
-        throw new Error('No se pudo conectar con el servidor. Ejecuta python mi_paciente_server.py y vuelve a intentarlo.');
+        throw new Error('No se pudo conectar con el servidor. Verifica tu conexión e inténtalo de nuevo.');
       }
-      const datos = await respuesta.json().catch(() => null);
+      const datos = await respuesta.json().catch(() => ({}));
       if (!respuesta.ok) {
-        throw new Error(datos?.error || `El servidor respondió con el estado ${respuesta.status}.`);
+        const error = new Error(datos.error || 'No fue posible completar la solicitud.');
+        error.datos = datos;
+        throw error;
       }
-      return datos || {};
+      return datos;
     }
 
-    async function cargarRecordatorios() {
-      try {
-        const datos = await solicitarApiRecordatorios('/recordatorios');
-        recordatorios = Array.isArray(datos.recordatorios) ? datos.recordatorios : [];
-      } catch (error) {
-        recordatorios = [];
-        mostrarMensajeAgenda([['error', error.message]]);
-      }
-      dibujarCalendario();
-      dibujarRecordatoriosDia();
-    }
+    const paginaPublica = document.getElementById('pagina-publica');
+    let destinoGuiaPendiente = null;
+    const panel = document.getElementById('panel');
+    const saludo = document.getElementById('saludo');
+    const btnSalir = document.getElementById('btnSalir');
 
-    function abrirAgenda() {
-      document.body.classList.add('vista-interna');
-      panel.hidden = true;
-      agenda.hidden = false;
-      // Cada visita exige elegir y confirmar la fecha de nuevo.
-      fechaConfirmada = '';
-      tipoRecordatorio = '';
-      formRecordatorio.hidden = true;
-      opcionesAgenda.forEach((opcion) => opcion.setAttribute('aria-pressed', 'false'));
-      mostrarMensajeAgenda([]);
-      dibujarCalendario();
-      dibujarRecordatoriosDia();
-      void cargarRecordatorios();
-      void cargarContactoNotificaciones();
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    }
-
-    cardCitas.addEventListener('click', abrirAgenda);
-    cardCitas.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        abrirAgenda();
-      }
-    });
-
-    btnVolverAgenda.addEventListener('click', () => {
+    function mostrarPanel(usuario) {
+      window.usuarioLogueadoEmail = usuario?.email || '';
       document.body.classList.remove('vista-interna');
-      agenda.hidden = true;
+      const primerNombre = (usuario?.first_name || usuario?.email || 'paciente').trim().split(/\s+/)[0];
+      saludo.textContent = 'Hola, ' + primerNombre;
+      document.body.classList.add('sesion-activa');
+      paginaPublica.style.display = 'none';
+      panel.classList.remove('animar-entrada-panel');
       panel.hidden = false;
+      void panel.offsetWidth;
+      panel.classList.add('animar-entrada-panel');
+      const destinoGuia = destinoGuiaPendiente;
+      destinoGuiaPendiente = null;
+      if (destinoGuia === 'citas') abrirAgenda();
+      else if (destinoGuia === 'profesionales') abrirProfesionales();
+      else if (destinoGuia === 'cuidados') abrirCuidados();
       window.scrollTo({ top: 0, behavior: 'auto' });
-    });
-
-    function dibujarCalendario() {
-      const mesNombre = new Intl.DateTimeFormat('es-CO', { month: 'long', year: 'numeric' }).format(mesVisible);
-      mesCalendario.textContent = mesNombre.charAt(0).toUpperCase() + mesNombre.slice(1);
-      calendarioDias.replaceChildren();
-
-      const primerDia = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1);
-      const inicioSemana = (primerDia.getDay() + 6) % 7;
-      const inicio = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1 - inicioSemana);
-      const hoyTexto = fechaLocal(ahoraBogota());
-
-      for (let i = 0; i < 42; i++) {
-        const fechaDia = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
-        const textoFecha = fechaLocal(fechaDia);
-        const cantidad = recordatorios.filter((item) => item.fecha === textoFecha).length;
-        const boton = document.createElement('button');
-        boton.type = 'button';
-        boton.className = 'dia-calendario';
-        boton.setAttribute('aria-pressed', textoFecha === fechaLocal(fechaSeleccionada) ? 'true' : 'false');
-        boton.setAttribute('aria-label', `${nombreFecha(textoFecha)}${cantidad ? `, ${cantidad} recordatorios` : ''}`);
-        if (fechaDia.getMonth() !== mesVisible.getMonth()) boton.classList.add('otro-mes');
-        if (textoFecha === hoyTexto) boton.classList.add('hoy');
-        if (textoFecha === fechaLocal(fechaSeleccionada)) boton.classList.add('seleccionado');
-
-        const numero = document.createElement('span');
-        numero.className = 'dia-numero';
-        numero.textContent = fechaDia.getDate();
-        const marca = document.createElement('span');
-        marca.className = 'dia-contador';
-        marca.textContent = cantidad ? String(cantidad) : '';
-        boton.append(numero, marca);
-        boton.addEventListener('click', () => {
-          fechaSeleccionada = fechaDia;
-          mesVisible = new Date(fechaDia.getFullYear(), fechaDia.getMonth(), 1);
-          dibujarCalendario();
-          dibujarRecordatoriosDia();
-          if (textoFecha < fechaLocal(ahoraBogota())) {
-            mostrarMensajeAgenda([['info', 'Esa fecha ya pasó: puedes consultar tus recordatorios, pero no programar citas en ella.']]);
-            return;
-          }
-          pedirConfirmacionFecha(textoFecha, 'calendario');
-        });
-        calendarioDias.appendChild(boton);
-      }
     }
 
-    document.getElementById('mesAnterior').addEventListener('click', () => {
-      mesVisible = new Date(mesVisible.getFullYear(), mesVisible.getMonth() - 1, 1);
-      fechaSeleccionada = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1);
-      dibujarCalendario();
-      dibujarRecordatoriosDia();
-    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (necesitaServidor) return;
+      mensaje.textContent = '';
 
-    document.getElementById('mesSiguiente').addEventListener('click', () => {
-      mesVisible = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 1);
-      fechaSeleccionada = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1);
-      dibujarCalendario();
-      dibujarRecordatoriosDia();
-    });
+      if (!correoAcceso.checkValidity()) {
+        correoAcceso.reportValidity();
+        return;
+      }
+      if (!clave.value) {
+        clave.reportValidity();
+        return;
+      }
 
-    opcionesAgenda.forEach((opcion) => {
-      opcion.addEventListener('click', () => {
-        if (!fechaConfirmada) {
-          mostrarMensajeAgenda([['info', 'Primero elige un día en el calendario y confírmalo para continuar.']]);
-          calendarioDias.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (modoAutenticacion === 'registro') {
+        if (datosRegistro.hidden) {
+          mensaje.textContent = 'Pulsa “Continuar con mis datos” para completar el registro.';
           return;
         }
-        tipoRecordatorio = opcion.dataset.tipo;
-        opcionesAgenda.forEach((otra) => otra.setAttribute('aria-pressed', otra === opcion ? 'true' : 'false'));
-        document.getElementById('tituloFormulario').textContent = `Nuevo recordatorio: ${tipoRecordatorio}`;
-        formRecordatorio.hidden = false;
-        fechaRecordatorio.min = fechaLocal(ahoraBogota());
-        fechaRecordatorio.value = fechaConfirmada;
-        detalleRecordatorio.value = '';
-        canalRecordatorio.value = '';
-        contactoRecordatorio.value = '';
-        usarOtroContacto.checked = false;
-        claveSolicitud = nuevaClaveSolicitud();
-        mostrarMensajeAgenda([]);
-        actualizarFechaConfirmadaTexto();
-        actualizarNotaCanal();
-        actualizarCampoContacto();
-
-        // Mostrar u ocultar el especialista según el tipo
-        const campoEspecialista = document.getElementById('campoEspecialista');
-        const selectEspecialista = document.getElementById('especialistaRecordatorio');
-
-        if (tipoRecordatorio === 'Cita de control') {
-          campoEspecialista.hidden = false;
-          selectEspecialista.required = true;
-        } else {
-          campoEspecialista.hidden = true;
-          selectEspecialista.required = false;
-          selectEspecialista.value = '';
+        if (!formatoClaveAdecuada.test(clave.value)) {
+          mensaje.textContent = 'La contraseña debe tener al menos 10 caracteres, con mayúscula, minúscula y número.';
+          clave.focus();
+          return;
         }
-        // Deslizar suavemente hacia el formulario
-        setTimeout(() => {
-          formRecordatorio.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
-      });
-    });
-
-    // El aviso se envía por defecto al teléfono/correo registrado; el paciente puede usar otro solo para esta cita.
-    function destinoRegistradoUtil() {
-      const canal = canalRecordatorio.value;
-      if (!canal || !contactoInfo) return false;
-      return canal === 'Correo electrónico' ? Boolean(contactoInfo.correo && contactoInfo.correo.valido) : Boolean(contactoInfo.telefono && contactoInfo.telefono.valido);
-    }
-
-    function actualizarCampoContacto() {
-      const canal = canalRecordatorio.value;
-      avisoCanal.hidden = true;
-      avisoCanal.textContent = '';
-      if (!canal) {
-        campoDestino.hidden = true;
-        campoContacto.hidden = true;
-        contactoRecordatorio.required = false;
-        return;
-      }
-      const esCorreo = canal === 'Correo electrónico';
-      const registrado = destinoRegistradoUtil();
-      const usarOtro = !registrado || usarOtroContacto.checked;
-
-      if (contactoInfo) {
-        campoDestino.hidden = false;
-        labelUsarOtro.hidden = !registrado;
-        if (registrado) {
-          const enmascarado = esCorreo ? contactoInfo.correo.enmascarado : contactoInfo.telefono.enmascarado;
-          textoDestino.textContent = `Enviaremos los avisos a tu ${esCorreo ? 'correo registrado' : 'número registrado'}: ${enmascarado}`;
-          textoUsarOtro.textContent = esCorreo ? 'Usar otro correo solo para esta cita' : 'Usar otro número solo para esta cita';
-        } else if (esCorreo) {
-          textoDestino.textContent = 'No pudimos usar el correo de tu cuenta. Escribe un correo para recibir los avisos.';
-        } else if (!contactoInfo.telefono.registrado) {
-          textoDestino.textContent = 'No tienes un número de celular registrado. Escribe uno para activar los avisos por teléfono.';
-        } else {
-          textoDestino.textContent = `El número registrado en tu cuenta (${contactoInfo.telefono.enmascarado}) no es válido. ${contactoInfo.telefono.problema} Escribe otro para activar los avisos por teléfono.`;
+        const campoInvalido = camposRegistro.find((campo) => !campo.checkValidity());
+        if (campoInvalido) {
+          campoInvalido.reportValidity();
+          return;
         }
-        if (contactoInfo.canales_configurados && contactoInfo.canales_configurados[canal] === false) {
-          avisoCanal.textContent = `El envío por ${canal} no está configurado en el servidor: tu cita se guardará, pero no se enviarán avisos hasta que se configure.`;
-          avisoCanal.hidden = false;
-        }
-      } else {
-        campoDestino.hidden = true; // sin datos del servidor: se pide el contacto manualmente
       }
 
-      campoContacto.hidden = !usarOtro;
-      contactoRecordatorio.required = usarOtro;
-      if (esCorreo) {
-        contactoRecordatorio.type = 'email';
-        contactoRecordatorio.placeholder = 'nombre@correo.com';
-        labelContacto.textContent = registrado ? 'Otro correo electrónico' : 'Correo electrónico';
-        contactoRecordatorio.autocomplete = 'email';
-      } else {
-        contactoRecordatorio.type = 'tel';
-        contactoRecordatorio.placeholder = 'Ej.: 300 123 4567';
-        labelContacto.textContent = registrado ? (canal === 'WhatsApp' ? 'Otro número de WhatsApp' : 'Otro número de celular') : (canal === 'WhatsApp' ? 'Número de WhatsApp' : 'Número de celular');
-        contactoRecordatorio.autocomplete = 'tel';
-      }
-    }
-
-    canalRecordatorio.addEventListener('change', () => { usarOtroContacto.checked = false; actualizarCampoContacto(); });
-    usarOtroContacto.addEventListener('change', () => {
-      actualizarCampoContacto();
-      if (usarOtroContacto.checked) contactoRecordatorio.focus();
-    });
-
-    async function cargarContactoNotificaciones() {
-      try {
-        contactoInfo = await solicitarApiRecordatorios('/api/contacto-notificaciones');
-      } catch (error) {
-        contactoInfo = null;
-      }
-      actualizarCampoContacto();
-    }
-
-    // Cambiar la fecha desde el formulario obliga a confirmarla de nuevo.
-    fechaRecordatorio.addEventListener('change', () => {
-      const nueva = fechaRecordatorio.value;
-      if (!nueva) { fechaRecordatorio.value = fechaConfirmada; return; }
-      if (nueva === fechaConfirmada) return;
-      if (nueva < fechaLocal(ahoraBogota())) {
-        fechaRecordatorio.value = fechaConfirmada;
-        mostrarMensajeAgenda([['error', 'No puedes programar una cita en una fecha pasada.']]);
-        return;
-      }
-      pedirConfirmacionFecha(nueva, 'campo');
-    });
-
-    function dibujarRecordatoriosDia() {
-      const dia = fechaLocal(fechaSeleccionada);
-      tituloRecordatoriosDia.textContent = `Recordatorios del ${nombreFecha(dia)}`;
-      recordatoriosDia.replaceChildren();
-      const delDia = recordatorios
-        .filter((item) => item.fecha === dia)
-        .sort((a, b) => a.hora.localeCompare(b.hora));
-
-      if (!delDia.length) {
-        const vacio = document.createElement('li');
-        vacio.className = 'sin-recordatorios';
-        vacio.textContent = 'No tienes recordatorios para este día.';
-        recordatoriosDia.appendChild(vacio);
-        return;
-      }
-
-      delDia.forEach((item) => {
-        const fila = document.createElement('li');
-        fila.className = 'recordatorio-item';
-        const informacion = document.createElement('div');
-        const titulo = document.createElement('strong');
-        titulo.textContent = `${item.hora} · ${item.tipo}`;
-        const especialista = document.createElement('span');
-        especialista.textContent = item.especialista ? `Especialista: ${item.especialista}` : '';
-        especialista.style.fontWeight = '600';
-        especialista.style.color = 'var(--color-citas-recordatorios)';
-
-        const detalle = document.createElement('span');
-        detalle.textContent = item.detalle || 'Sin detalle adicional';
-        const canal = document.createElement('span');
-        canal.textContent = `${item.canal}: ${item.contacto}`;
-
-        informacion.append(titulo, especialista, detalle, canal);
-        (item.notificaciones || []).forEach((aviso) => {
-          const { nivel, texto } = describirAviso(aviso);
-          const estado = document.createElement('span');
-          estado.className = 'aviso-estado';
-          estado.dataset.nivel = nivel;
-          estado.textContent = texto;
-          informacion.appendChild(estado);
-          if (aviso.estado === 'FALLIDO') {
-            const reintentar = document.createElement('button');
-            reintentar.type = 'button';
-            reintentar.className = 'btn-reintentar-aviso';
-            reintentar.textContent = 'Reintentar envío';
-            reintentar.dataset.reintentar = aviso.id;
-            informacion.appendChild(reintentar);
+      const eraRegistro = modoAutenticacion === 'registro';
+      const ruta = eraRegistro ? '/api/register' : '/api/login';
+      const contenido = eraRegistro
+        ? {
+            email: correoAcceso.value.trim(),
+            password: clave.value,
+            first_name: document.getElementById('nombrePaciente').value.trim(),
+            last_name: document.getElementById('apellidoPaciente').value.trim(),
+            document_type: document.getElementById('tipoDocumento').value,
+            document_number: document.getElementById('documentoPaciente').value.trim(),
+            phone: document.getElementById('celularPaciente').value.trim()
           }
-        });
+        : { email: correoAcceso.value.trim(), password: clave.value };
 
-        const eliminar = document.createElement('button');
-        eliminar.type = 'button';
-        eliminar.className = 'btn-eliminar-recordatorio';
-        eliminar.textContent = 'Eliminar';
-        eliminar.setAttribute('aria-label', `Eliminar recordatorio de ${item.tipo} a las ${item.hora}`);
-        eliminar.dataset.eliminar = item.id;
-        fila.append(informacion, eliminar);
-        recordatoriosDia.appendChild(fila);
-      });
-    }
-
-    recordatoriosDia.addEventListener('click', async (e) => {
-      const reintento = e.target.closest('[data-reintentar]');
-      if (reintento) { await reintentarAviso(reintento); return; }
-      const boton = e.target.closest('[data-eliminar]');
-      if (!boton) return;
-      boton.disabled = true;
+      btnEnviarAcceso.disabled = true;
+      btnEnviarAcceso.textContent = eraRegistro ? 'Creando cuenta…' : 'Ingresando…';
       try {
-        await solicitarApiRecordatorios('/eliminar-recordatorio', {
-          method: 'POST',
-          body: JSON.stringify({ id: boton.dataset.eliminar })
-        });
-        recordatorios = recordatorios.filter((item) => String(item.id) !== boton.dataset.eliminar);
+        const resultado = await enviarSolicitudApi(ruta, contenido);
+        if (resultado.verification_required) {
+          mostrarVerificacion(resultado.email || correoAcceso.value.trim(), resultado.mensaje || '');
+          return;
+        }
+        mostrarPanel(resultado.user);
+        form.reset();
+        formVerificacion.reset();
+        ocultarClave();
+        datosRegistro.hidden = true;
+        camposRegistro.forEach((campo) => { campo.required = false; });
       } catch (error) {
-        boton.disabled = false;
-        mostrarMensajeAgenda([['error', error.message]]);
-        return;
+        if (error.datos?.verification_required) {
+          mostrarVerificacion(
+            error.datos.email || correoAcceso.value.trim(),
+            error.message
+          );
+        } else {
+          mensaje.textContent = error.message;
+        }
+      } finally {
+        btnEnviarAcceso.disabled = false;
+        btnEnviarAcceso.textContent = modoAutenticacion === 'registro' ? 'Crear cuenta' : 'Iniciar sesión';
       }
-      dibujarCalendario();
-      dibujarRecordatoriosDia();
     });
 
-    async function reintentarAviso(boton) {
-      boton.disabled = true;
-      try {
-        const datos = await solicitarApiRecordatorios('/reintentar-notificacion', {
-          method: 'POST',
-          body: JSON.stringify({ id: Number(boton.dataset.reintentar) })
-        });
-        recordatorios.forEach((item) => {
-          item.notificaciones = (item.notificaciones || []).map((aviso) => aviso.id === datos.notificacion.id ? datos.notificacion : aviso);
-        });
-        const { nivel, texto } = describirAviso(datos.notificacion);
-        mostrarMensajeAgenda([[nivel, texto]]);
-      } catch (error) {
-        mostrarMensajeAgenda([['error', error.message]]);
-      }
-      dibujarRecordatoriosDia();
-    }
+    codigoVerificacion.addEventListener('input', () => {
+      codigoVerificacion.value = codigoVerificacion.value.replace(/\D/g, '').slice(0, 6);
+    });
 
-    formRecordatorio.addEventListener('submit', async (e) => {
+    formVerificacion.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (guardandoRecordatorio) return;
-      if (!formRecordatorio.reportValidity()) return;
-
-      // La fecha del formulario debe ser la que el paciente confirmó.
-      if (!fechaConfirmada || fechaRecordatorio.value !== fechaConfirmada) {
-        if (fechaRecordatorio.value && fechaRecordatorio.value >= fechaLocal(ahoraBogota())) pedirConfirmacionFecha(fechaRecordatorio.value, 'campo');
-        else mostrarMensajeAgenda([['error', 'Elige y confirma una fecha futura.']]);
-        return;
-      }
-      const fechaHora = new Date(`${fechaRecordatorio.value}T${horaRecordatorio.value}:00`);
-      if (fechaHora <= ahoraBogota()) {
-        mostrarMensajeAgenda([['error', 'Elige una fecha y hora futuras (hora de Colombia).']]);
-        return;
-      }
-
-      const usarRegistrado = destinoRegistradoUtil() && !usarOtroContacto.checked;
-      const recordatorio = {
-        tipo: tipoRecordatorio,
-        fecha: fechaRecordatorio.value,
-        hora: horaRecordatorio.value,
-        especialista: document.getElementById('especialistaRecordatorio').value,
-        detalle: detalleRecordatorio.value.trim(),
-        canal: canalRecordatorio.value,
-        usar_contacto_registrado: usarRegistrado,
-        contacto: usarRegistrado ? '' : contactoRecordatorio.value.trim(),
-        clave_solicitud: claveSolicitud
-      };
-      const botonGuardar = formRecordatorio.querySelector('button[type="submit"]');
-      const textoBoton = botonGuardar.textContent;
-      guardandoRecordatorio = true;
-      botonGuardar.disabled = true;
-      botonGuardar.textContent = 'Guardando…';
-      formRecordatorio.setAttribute('aria-busy', 'true');
-      let datos;
+      if (necesitaServidor || !formVerificacion.reportValidity()) return;
+      mensajeVerificacion.textContent = '';
+      btnConfirmarVerificacion.disabled = true;
+      btnConfirmarVerificacion.textContent = 'Verificando…';
       try {
-        datos = await solicitarApiRecordatorios('/guardar-recordatorio', {
-          method: 'POST',
-          body: JSON.stringify(recordatorio)
+        const resultado = await enviarSolicitudApi('/api/verify-email', {
+          email: correoPendienteVerificacion,
+          code: codigoVerificacion.value
         });
+        mostrarPanel(resultado.user);
+        form.reset();
+        formVerificacion.reset();
+        ocultarClave();
+        datosRegistro.hidden = true;
+        camposRegistro.forEach((campo) => { campo.required = false; });
       } catch (error) {
-        mostrarMensajeAgenda([['error', error.message]]);
-        return;
+        mensajeVerificacion.textContent = error.message;
       } finally {
-        guardandoRecordatorio = false;
-        botonGuardar.disabled = false;
-        botonGuardar.textContent = textoBoton;
-        formRecordatorio.removeAttribute('aria-busy');
+        btnConfirmarVerificacion.disabled = false;
+        btnConfirmarVerificacion.textContent = 'Verificar correo';
       }
+    });
 
-      recordatorios = recordatorios.filter((item) => item.id !== datos.recordatorio.id);
-      recordatorios.push(datos.recordatorio);
-      fechaSeleccionada = fechaDesdeTexto(recordatorio.fecha);
-      mesVisible = new Date(fechaSeleccionada.getFullYear(), fechaSeleccionada.getMonth(), 1);
-      dibujarCalendario();
-      dibujarRecordatoriosDia();
-      formRecordatorio.reset();
-      fechaRecordatorio.value = fechaConfirmada;
-      usarOtroContacto.checked = false;
-      claveSolicitud = nuevaClaveSolicitud();
-      actualizarCampoContacto();
-      mostrarMensajeAgenda(resumenGuardado(datos.recordatorio, datos.creado));
+    btnReenviarCodigo.addEventListener('click', async () => {
+      btnReenviarCodigo.disabled = true;
+      mensajeVerificacion.textContent = 'Enviando código…';
+      try {
+        const resultado = await enviarSolicitudApi('/api/resend-verification', {
+          email: correoPendienteVerificacion
+        });
+        mensajeVerificacion.textContent = resultado.message || 'Enviamos un nuevo código.';
+      } catch (error) {
+        mensajeVerificacion.textContent = error.message;
+      } finally {
+        btnReenviarCodigo.disabled = false;
+      }
+    });
+
+    document.getElementById('btnVolverAcceso').addEventListener('click', () => {
+      formVerificacion.hidden = true;
+      selectorModoAcceso.hidden = false;
+      form.hidden = false;
+      abrirAcceso('login');
+    });
+
+    btnSalir.addEventListener('click', async () => {
+      window.usuarioLogueadoEmail = '';
+      try {
+        await fetch(window.API_BASE_URL + '/api/logout', { method: 'POST', credentials: 'include' });
+      } catch (error) {
+        // El panel se cierra localmente aunque el servidor ya no esté disponible.
+      }
+      panel.hidden = true;
+      document.body.classList.remove('sesion-activa', 'vista-interna');
+      paginaPublica.style.display = 'block';
+      form.reset();
+      formVerificacion.reset();
+      mensaje.textContent = '';
+      mensajeVerificacion.textContent = '';
+      form.hidden = false;
+      formVerificacion.hidden = true;
+      selectorModoAcceso.hidden = false;
+      ocultarClave();
+      datosRegistro.hidden = true;
+      camposRegistro.forEach((campo) => { campo.required = false; });
+      acceso.classList.remove('abierto');
+      acceso.style.display = '';
+      btnIniciar.setAttribute('aria-expanded', 'false');
+      modoAutenticacion = 'login';
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch(window.API_BASE_URL + '/api/me', { credentials: 'include' })
+        .then((respuesta) => respuesta.ok ? respuesta.json() : null)
+        .then((datos) => { if (datos?.user) mostrarPanel(datos.user); })
+        .catch(() => { /* La autenticación requiere server.py. */ });
     });
