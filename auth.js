@@ -93,33 +93,12 @@
     tabIniciar.addEventListener('click', () => abrirAcceso('login'));
     tabCrear.addEventListener('click', () => abrirAcceso('registro'));
 
-    const btnIrCrearCuenta = document.getElementById('btnIrCrearCuenta');
     const btnIrIniciarSesion = document.getElementById('btnIrIniciarSesion');
-    const cardCrearCuenta = document.getElementById('cardCrearCuenta');
-
-    if (btnIrCrearCuenta) {
-      btnIrCrearCuenta.addEventListener('click', (event) => {
-        event.stopPropagation();
-        abrirAcceso('registro');
-      });
-    }
 
     if (btnIrIniciarSesion) {
       btnIrIniciarSesion.addEventListener('click', (event) => {
         event.stopPropagation();
         abrirAcceso('login');
-      });
-    }
-
-    if (cardCrearCuenta) {
-      cardCrearCuenta.addEventListener('click', (event) => {
-        if (!event.target.closest('button')) abrirAcceso('registro');
-      });
-      cardCrearCuenta.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          abrirAcceso('registro');
-        }
       });
     }
 
