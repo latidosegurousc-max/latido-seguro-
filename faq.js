@@ -594,9 +594,53 @@ const PASOS_TUTORIAL = [
   }
 ];
 
+const PASOS_TUTORIAL_AGENDA = [
+  {
+    titulo: 'Bienvenido a Citas y recordatorios',
+    texto: 'Te mostraremos los controles de esta pantalla. El recorrido no crea ni modifica citas; al terminar podrás seguir los pasos por tu cuenta.',
+    elemento: '#guiaAgenda'
+  },
+  {
+    titulo: 'Cambiar de mes',
+    texto: 'Usa las flechas para ir al mes anterior o al siguiente. El nombre del mes actual aparece en el centro.',
+    elemento: '.calendario-nav'
+  },
+  {
+    titulo: 'Elegir una fecha',
+    texto: 'Pulsa un día del calendario. Se abrirá una ventana para confirmar la fecha; elige “Confirmar fecha” para continuar. Los números verdes indican cuántos recordatorios hay ese día.',
+    elemento: '#calendarioDias'
+  },
+  {
+    titulo: 'Crear una cita de control',
+    texto: 'Después de confirmar una fecha, pulsa aquí para abrir el formulario. Para esta cita tendrás que elegir un especialista, indicar la hora y el canal de aviso; el detalle es opcional. Al final pulsa “Guardar recordatorio”.',
+    elemento: '.agenda-opcion[data-tipo="Cita de control"]'
+  },
+  {
+    titulo: 'Crear una cita prioritaria',
+    texto: 'Esta opción también crea una cita. Selecciona el día y la hora, completa el canal de aviso y guarda. El detalle es opcional.',
+    elemento: '.agenda-opcion[data-tipo="Cita prioritaria"]'
+  },
+  {
+    titulo: 'Crear un recordatorio de medicamentos',
+    texto: 'Selecciona esta opción para programar un aviso sobre tus medicamentos. Completa la hora y el canal de aviso en el formulario y pulsa “Guardar recordatorio”. No modifica las indicaciones médicas.',
+    elemento: '.agenda-opcion[data-tipo="Medicamentos"]'
+  },
+  {
+    titulo: 'Crear un recordatorio de ejercicio',
+    texto: 'Usa esta opción para programar un aviso de ejercicio. Completa los datos del formulario y pulsa “Guardar recordatorio”. Sigue las recomendaciones de actividad de tu equipo médico.',
+    elemento: '.agenda-opcion[data-tipo="Ejercicio"]'
+  },
+  {
+    titulo: 'Consultar tus recordatorios',
+    texto: 'Aquí aparecen los recordatorios de la fecha elegida. Selecciona otro día en el calendario para consultar los que corresponden a esa fecha.',
+    elemento: '.lista-recordatorios'
+  }
+];
+
 let pasoActual = 0;
 let elementoResaltado = null;
 let desbordamientoAnterior = '';
+let pasosActivos = PASOS_TUTORIAL;
 const overlay = document.getElementById('tutorialOverlay');
 const tooltip = document.getElementById('tutorialTooltip');
 const titleEl = document.getElementById('tutorialTitle');
@@ -604,6 +648,7 @@ const textEl = document.getElementById('tutorialText');
 const btnSiguiente = document.getElementById('btnTutorialSiguiente');
 const btnCerrar = document.getElementById('btnTutorialCerrar');
 const btnIniciarGuia = document.getElementById('btnIniciarGuia');
+const btnIniciarGuiaAgenda = document.getElementById('btnIniciarGuiaAgenda');
 
 function cerrarTutorial() {
   if (!overlay) return;
@@ -622,12 +667,12 @@ function mostrarPaso(index) {
     elementoResaltado = null;
   }
 
-  if (index >= PASOS_TUTORIAL.length) {
+  if (index >= pasosActivos.length) {
     cerrarTutorial();
     return;
   }
 
-  const paso = PASOS_TUTORIAL[index];
+  const paso = pasosActivos[index];
   elementoResaltado = document.querySelector(paso.elemento);
   if (!elementoResaltado) {
     mostrarPaso(index + 1);
@@ -637,7 +682,7 @@ function mostrarPaso(index) {
   pasoActual = index;
   titleEl.textContent = paso.titulo;
   textEl.textContent = paso.texto;
-  btnSiguiente.textContent = index === PASOS_TUTORIAL.length - 1
+  btnSiguiente.textContent = index === pasosActivos.length - 1
     ? 'Finalizar ✓'
     : 'Siguiente →';
   elementoResaltado.classList.add('tutorial-elemento-resaltado');
@@ -662,12 +707,15 @@ function mostrarPaso(index) {
   });
 }
 
-function iniciarTutorial() {
+function iniciarTutorial(pasos = PASOS_TUTORIAL) {
   if (!overlay) return;
-  const buscadorFaq = document.getElementById('buscador');
-  if (buscadorFaq) {
-    buscadorFaq.value = '';
-    buscadorFaq.dispatchEvent(new Event('input', { bubbles: true }));
+  pasosActivos = Array.isArray(pasos) ? pasos : PASOS_TUTORIAL;
+  if (pasosActivos === PASOS_TUTORIAL) {
+    const buscadorFaq = document.getElementById('buscador');
+    if (buscadorFaq) {
+      buscadorFaq.value = '';
+      buscadorFaq.dispatchEvent(new Event('input', { bubbles: true }));
+    }
   }
   if (overlay.parentElement !== document.body) {
     document.body.appendChild(overlay);
@@ -686,4 +734,8 @@ if (btnIniciarGuia && overlay && btnSiguiente && btnCerrar) {
   document.addEventListener('keydown', (evento) => {
     if (!overlay.hidden && evento.key === 'Escape') cerrarTutorial();
   });
+}
+
+if (btnIniciarGuiaAgenda && overlay && btnSiguiente && btnCerrar) {
+  btnIniciarGuiaAgenda.addEventListener('click', () => iniciarTutorial(PASOS_TUTORIAL_AGENDA));
 }
